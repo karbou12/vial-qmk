@@ -113,11 +113,11 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     int is_layer = get_highest_layer(layer_state|default_layer_state);
     HSV hsv = {0, 255, rgblight_get_val()};
     if (is_layer == 1) {
-      hsv.h = 11; //CORAL
+      hsv.h = 43; //YELLOW
     } else if (is_layer == 2)  {
       hsv.h = 85; //GREEN
     } else if (is_layer == 3)  {
-      hsv.h = 43; //YELLOW
+      hsv.h = 22; //CORAL
     } else if (is_layer == 4)  {
       hsv.h = 0; //RED
     } else if (is_layer == 5)  {
