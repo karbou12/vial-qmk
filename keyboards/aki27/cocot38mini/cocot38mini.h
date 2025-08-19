@@ -55,20 +55,5 @@ enum cocot_keycodes {
 #define SCRL_IN QK_KB_6
 #define AM_TOG QK_KB_7
 
-
-bool encoder_update_user(uint8_t index, bool clockwise);
-bool encoder_update_kb(uint8_t index, bool clockwise);
-
 bool cocot_get_scroll_mode(void);
 void cocot_set_scroll_mode(bool mode);
-
-
-void enable_click_layer(void);
-void disable_click_layer(void);
-int16_t my_abs(int16_t num);
-int16_t mmouse_move_y_sign(int16_t num);
-bool is_clickable_mode(void);
-
-
-void render_logo(void);
-void oled_write_layer_state(void);
