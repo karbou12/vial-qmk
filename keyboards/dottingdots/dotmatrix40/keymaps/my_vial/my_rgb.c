@@ -13,8 +13,9 @@ static uint8_t my_mode = 0;
  *   - It may not be common way.
  *   - If Hue and Sat are changed by key or rotary encorder on non-default layer, these are changed as WYSIWYG.
  */
+
 // #define USE_LAYER_SEGMENT
-#ifdef USE_LAYER_SEGMENT
+
 const rgblight_segment_t PROGMEM my_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_YELLOW});
 const rgblight_segment_t PROGMEM my_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_GREEN});
 const rgblight_segment_t PROGMEM my_layer2_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_CYAN});
@@ -23,6 +24,7 @@ const rgblight_segment_t PROGMEM my_layer4_layer[] = RGBLIGHT_LAYER_SEGMENTS({0,
 const rgblight_segment_t PROGMEM my_layer5_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_CHARTREUSE});
 const rgblight_segment_t PROGMEM my_layer6_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_MAGENTA});
 const rgblight_segment_t PROGMEM my_layer7_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_BLUE});
+const rgblight_segment_t PROGMEM my_capsword_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_RED});
 const rgblight_segment_t PROGMEM my_layerOFF_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 6, HSV_OFF});
 
 const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
@@ -33,15 +35,20 @@ const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
     my_layer4_layer,
     my_layer5_layer,
     my_layer6_layer,
-    my_layer7_layer
+    my_layer7_layer,
+    my_capsword_layer
 );
-#endif
 
 static void record_current_rgblight(void) {
     my_mode = rgblight_get_mode();
     my_hsv.h = rgblight_get_hue();
     my_hsv.s = rgblight_get_sat();
     my_hsv.v = rgblight_get_val();
+}
+
+static void set_rgblight_on_default_layer(void) {
+    rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
+    rgblight_mode_noeeprom(my_mode);
 }
 
 void keyboard_post_init_user() {
@@ -80,8 +87,7 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
     record_current_rgblight();
-    rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
-    rgblight_mode_noeeprom(my_mode);
+    set_rgblight_on_default_layer();
 
     return state;
 }
@@ -101,44 +107,20 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     rgblight_set_layer_state(6, layer_state_cmp(state, 6));
     rgblight_set_layer_state(7, layer_state_cmp(state, 7));
 #else
-    hsv_t hsv;
-
     static uint8_t prev_layer = 0;
     if (prev_layer == 0) {
         record_current_rgblight();
     }
 
     uint8_t current_layer = get_highest_layer(state);
+    if (1 <= current_layer && current_layer <= 7) {
+        const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
+        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
+        rgblight_mode_noeeprom(0);
+    } else {
+        set_rgblight_on_default_layer();
+    }
 
-    switch (current_layer) {
-        case 1:
-            hsv = (hsv_t){HSV_GREEN};
-            break;
-        case 2:
-            hsv = (hsv_t){HSV_CYAN};
-            break;
-        case 3:
-            hsv = (hsv_t){HSV_ORANGE};
-            break;
-        case 4:
-            hsv = (hsv_t){HSV_PURPLE};
-            break;
-        case 5:
-            hsv = (hsv_t){HSV_CHARTREUSE};
-            break;
-        case 6:
-            hsv = (hsv_t){HSV_MAGENTA};
-            break;
-        case 7:
-            hsv = (hsv_t){HSV_BLUE};
-            break;
-        default:
-            hsv = my_hsv;
-            break;
-    };
-
-    rgblight_sethsv_noeeprom(hsv.h, hsv.s, my_hsv.v);
-    rgblight_mode_noeeprom((current_layer == 0) ? my_mode : 0);
     prev_layer = current_layer;
 #endif
 
@@ -147,12 +129,11 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 void caps_word_set_user(bool active) {
     if (active) {
-        hsv_t hsv = (hsv_t){HSV_RED};
-        rgblight_sethsv_noeeprom(hsv.h, hsv.s, my_hsv.v);
+        const rgblight_segment_t* const cur_seg = my_capsword_layer;
+        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
         rgblight_mode_noeeprom(0);
     } else {
-        rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
-        rgblight_mode_noeeprom(my_mode);
+        set_rgblight_on_default_layer();
     }
 }
 
