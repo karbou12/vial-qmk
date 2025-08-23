@@ -1,5 +1,5 @@
 CUSTOM_MATRIX = lite
 I2C_DRIVER_REQUIRED = yes
 SRC += matrix.c
-CONSOLE_ENABLE = yes
+# CONSOLE_ENABLE = yes
 VIA_ENABLE = yes
