@@ -18,13 +18,13 @@ PCBの外形線がタイトなので、ケースの設計が容易だ。
 * Hardware Supported: PCB, Waveshare RP2040-Zero
 * Hardware Availability: [GreenKeys](https://green-keys.info/)
 
-Make example for this keyboard (after setting up your build environment):
+Make example for this keyboard to support Vial (after setting up your build environment):
 
-    make green_keys/gravity_45:default
+    make green_keys/gravity_45:vial
 
-Flashing example for this keyboard:
+Flashing example for this keyboard to support Vial:
 
-    make green_keys/gravity_45:default:flash
+    make green_keys/gravity_45:vial:flash
 
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
 
