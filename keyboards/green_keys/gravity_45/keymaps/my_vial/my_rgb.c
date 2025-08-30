@@ -2,7 +2,7 @@
 #include <my_keycodes.h>
 
 typedef union {
-    uint8_t raw;
+    uint32_t raw;
     struct {
         bool is_rgb_per_layer;
     };
