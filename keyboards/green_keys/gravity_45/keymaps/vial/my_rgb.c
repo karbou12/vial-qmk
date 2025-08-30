@@ -1,4 +1,14 @@
 #ifdef RGBLIGHT_LAYERS
+#include <my_keycodes.h>
+
+typedef union {
+    uint8_t raw;
+    struct {
+        bool is_rgb_per_layer;
+    };
+} user_config_t;
+
+user_config_t user_config;
 
 static hsv_t my_hsv;
 static uint8_t my_mode = 0;
@@ -53,6 +63,19 @@ static void set_rgblight_on_default_layer(void) {
     rgblight_mode_noeeprom(my_mode);
 }
 
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case RGB_LAYER_TOG:
+            if (record->event.pressed) {
+                user_config.is_rgb_per_layer ^= true;
+                eeconfig_update_user(user_config.raw);
+            }
+            return false;
+        default:
+            return true;
+    }
+}
+
 void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case UG_NEXT:
@@ -80,11 +103,19 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
+void eeconfig_init_user(void) {
+    user_config.raw = 1;
+    user_config.is_rgb_per_layer = true;
+    eeconfig_update_user(user_config.raw);
+}
+
 void keyboard_post_init_user(void) {
 #ifdef USE_LAYER_SEGMENT
     rgblight_layers = my_rgb_layers;
 #endif
     record_current_rgblight();
+
+    user_config.raw = eeconfig_read_user();
 };
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
@@ -100,14 +131,16 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         record_current_rgblight();
     }
 
-    rgblight_set_layer_state(1, layer_state_cmp(state, 1));
-    rgblight_set_layer_state(2, layer_state_cmp(state, 2));
-    rgblight_set_layer_state(3, layer_state_cmp(state, 3));
-    rgblight_set_layer_state(4, layer_state_cmp(state, 4));
-    rgblight_set_layer_state(5, layer_state_cmp(state, 5));
-    rgblight_set_layer_state(6, layer_state_cmp(state, 6));
-    rgblight_set_layer_state(7, layer_state_cmp(state, 7));
-    rgblight_set_layer_state(8, layer_state_cmp(state, 8));
+    if (user_config.is_rgb_per_layer) {
+        rgblight_set_layer_state(1, layer_state_cmp(state, 1));
+        rgblight_set_layer_state(2, layer_state_cmp(state, 2));
+        rgblight_set_layer_state(3, layer_state_cmp(state, 3));
+        rgblight_set_layer_state(4, layer_state_cmp(state, 4));
+        rgblight_set_layer_state(5, layer_state_cmp(state, 5));
+        rgblight_set_layer_state(6, layer_state_cmp(state, 6));
+        rgblight_set_layer_state(7, layer_state_cmp(state, 7));
+        rgblight_set_layer_state(8, layer_state_cmp(state, 8));
+    }
 #else
     static uint8_t prev_layer = 0;
     if (prev_layer == 0) {
@@ -116,9 +149,11 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
     uint8_t current_layer = get_highest_layer(state);
     if (1 <= current_layer && current_layer <= 8) {
-        const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
-        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
-        rgblight_mode_noeeprom(0);
+        if (user_config.is_rgb_per_layer) {
+            const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
+            rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
+            rgblight_mode_noeeprom(0);
+        }
     } else {
         set_rgblight_on_default_layer();
     }
@@ -131,9 +166,11 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 void caps_word_set_user(bool active) {
     if (active) {
-        const rgblight_segment_t* const cur_seg = my_capsword_layer;
-        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
-        rgblight_mode_noeeprom(0);
+        if (user_config.is_rgb_per_layer) {
+            const rgblight_segment_t* const cur_seg = my_capsword_layer;
+            rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
+            rgblight_mode_noeeprom(0);
+        }
     } else {
         set_rgblight_on_default_layer();
     }
