@@ -143,19 +143,21 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     }
 #else
     static uint8_t prev_layer = 0;
-    if (prev_layer == 0) {
+    if (prev_layer == 0 && !is_caps_word_on()) {
         record_current_rgblight();
     }
 
     uint8_t current_layer = get_highest_layer(state);
-    if (1 <= current_layer && current_layer <= 8) {
-        if (user_config.is_rgb_per_layer) {
-            const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
-            rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
-            rgblight_mode_noeeprom(0);
+    if (!is_caps_word_on()) {
+        if (1 <= current_layer && current_layer <= 8) {
+            if (user_config.is_rgb_per_layer) {
+                const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
+                rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
+                rgblight_mode_noeeprom(0);
+            }
+        } else {
+            set_rgblight_on_default_layer();
         }
-    } else {
-        set_rgblight_on_default_layer();
     }
 
     prev_layer = current_layer;
