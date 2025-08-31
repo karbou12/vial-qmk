@@ -132,14 +132,9 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     }
 
     if (user_config.is_rgb_per_layer) {
-        rgblight_set_layer_state(1, layer_state_cmp(state, 1));
-        rgblight_set_layer_state(2, layer_state_cmp(state, 2));
-        rgblight_set_layer_state(3, layer_state_cmp(state, 3));
-        rgblight_set_layer_state(4, layer_state_cmp(state, 4));
-        rgblight_set_layer_state(5, layer_state_cmp(state, 5));
-        rgblight_set_layer_state(6, layer_state_cmp(state, 6));
-        rgblight_set_layer_state(7, layer_state_cmp(state, 7));
-        rgblight_set_layer_state(8, layer_state_cmp(state, 8));
+        for (int i = 1; i <= 8; i++) {
+            rgblight_set_layer_state(i, layer_state_cmp(state, i));
+        }
     }
 #else
     static uint8_t prev_layer = 0;
@@ -149,14 +144,14 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
     uint8_t current_layer = get_highest_layer(state);
     if (!is_caps_word_on()) {
-        if (1 <= current_layer && current_layer <= 8) {
+        if (current_layer == 0) {
+            set_rgblight_on_default_layer();
+        } else if (current_layer < ARRAY_SIZE(my_rgb_layers)) {
             if (user_config.is_rgb_per_layer) {
                 const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
                 rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
                 rgblight_mode_noeeprom(0);
             }
-        } else {
-            set_rgblight_on_default_layer();
         }
     }
 
