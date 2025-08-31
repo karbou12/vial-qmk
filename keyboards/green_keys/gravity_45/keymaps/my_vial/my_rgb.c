@@ -173,7 +173,7 @@ void caps_word_set_user(bool active) {
             rgblight_mode_noeeprom(0);
         }
     } else {
-        set_rgblight_on_default_layer();
+        set_rgblight_on_current_layer();
     }
 }
 
