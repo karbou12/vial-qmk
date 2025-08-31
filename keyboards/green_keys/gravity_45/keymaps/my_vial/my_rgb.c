@@ -64,6 +64,18 @@ static void set_rgblight_on_default_layer(void) {
     rgblight_mode_noeeprom(my_mode);
 }
 
+static void set_rgblight_on_current_layer(void) {
+    if (current_layer == 0) {
+        set_rgblight_on_default_layer();
+    } else if (current_layer < ARRAY_SIZE(my_rgb_layers)) {
+        if (user_config.is_rgb_per_layer) {
+            const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
+            rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
+            rgblight_mode_noeeprom(0);
+        }
+    }
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case RGB_LAYER_TOG:
@@ -145,15 +157,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
     current_layer = get_highest_layer(state);
     if (!is_caps_word_on()) {
-        if (current_layer == 0) {
-            set_rgblight_on_default_layer();
-        } else if (current_layer < ARRAY_SIZE(my_rgb_layers)) {
-            if (user_config.is_rgb_per_layer) {
-                const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
-                rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
-                rgblight_mode_noeeprom(0);
-            }
-        }
+        set_rgblight_on_current_layer();
     }
 
 #endif
