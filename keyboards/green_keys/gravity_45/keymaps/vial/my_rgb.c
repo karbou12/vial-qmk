@@ -12,6 +12,7 @@ user_config_t user_config;
 
 static hsv_t my_hsv;
 static uint8_t my_mode = 0;
+static uint8_t current_layer = 0;
 
 /**
  * There are two way for implementations.
@@ -137,12 +138,12 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         }
     }
 #else
-    static uint8_t prev_layer = 0;
+    const uint8_t prev_layer = current_layer;
     if (prev_layer == 0 && !is_caps_word_on()) {
         record_current_rgblight();
     }
 
-    uint8_t current_layer = get_highest_layer(state);
+    current_layer = get_highest_layer(state);
     if (!is_caps_word_on()) {
         if (current_layer == 0) {
             set_rgblight_on_default_layer();
@@ -155,7 +156,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         }
     }
 
-    prev_layer = current_layer;
 #endif
 
     return state;
