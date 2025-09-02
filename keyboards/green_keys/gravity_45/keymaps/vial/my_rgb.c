@@ -59,21 +59,21 @@ static void record_current_rgblight(void) {
     my_hsv.v = rgblight_get_val();
 }
 
-static void set_rgblight_on_default_layer(void) {
-    rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
-    rgblight_mode_noeeprom(my_mode);
-}
-
-static void set_rgblight_on_current_layer(void) {
-    if (current_layer == 0) {
-        set_rgblight_on_default_layer();
-    } else if (current_layer < ARRAY_SIZE(my_rgb_layers)) {
+static void set_rgblight_on_layer_of(uint8_t layer) {
+    if (layer == 0) {
+        rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
+        rgblight_mode_noeeprom(my_mode);
+    } else if (layer < ARRAY_SIZE(my_rgb_layers)) {
         if (user_config.is_rgb_per_layer) {
-            const rgblight_segment_t* const cur_seg = my_rgb_layers[current_layer];
+            const rgblight_segment_t* const cur_seg = my_rgb_layers[layer];
             rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
             rgblight_mode_noeeprom(0);
         }
     }
+}
+
+static void set_rgblight_on_current_layer(void) {
+    set_rgblight_on_layer_of((current_layer == 0) ? get_highest_layer(default_layer_state) : current_layer);
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -132,8 +132,8 @@ void keyboard_post_init_user(void) {
 };
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
-    record_current_rgblight();
-    set_rgblight_on_default_layer();
+    const uint8_t layer = get_highest_layer(state);
+    set_rgblight_on_layer_of(layer);
 
     return state;
 }
@@ -151,7 +151,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     }
 #else
     const uint8_t prev_layer = current_layer;
-    if (prev_layer == 0 && !is_caps_word_on()) {
+    if (get_highest_layer(default_layer_state) == 0 && prev_layer == 0 && !is_caps_word_on()) {
         record_current_rgblight();
     }
 
