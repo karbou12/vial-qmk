@@ -59,6 +59,17 @@ static void record_current_rgblight(void) {
     my_hsv.v = rgblight_get_val();
 }
 
+static void record_rgblight_edited_by_vial(void) {
+#ifdef USE_LAYER_SEGMENT
+    if (get_highest_layer(default_layer_state) == 0 && !is_caps_word_on()) {
+#else
+    const uint8_t prev_layer = current_layer;
+    if (get_highest_layer(default_layer_state) == 0 && prev_layer == 0 && !is_caps_word_on()) {
+#endif
+        record_current_rgblight();
+    }
+}
+
 static void set_rgblight_on_layer_of(uint8_t layer) {
     if (layer == 0) {
         rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
@@ -133,10 +144,7 @@ void keyboard_post_init_user(void) {
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
 #ifndef USE_LAYER_SEGMENT
-    const uint8_t prev_layer = current_layer;
-    if (get_highest_layer(default_layer_state) == 0 && prev_layer == 0 && !is_caps_word_on()) {
-        record_current_rgblight();
-    }
+    record_rgblight_edited_by_vial();
 #endif
 
     const uint8_t layer = get_highest_layer(state);
@@ -146,27 +154,19 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-#ifdef USE_LAYER_SEGMENT
-    if (get_highest_layer(default_layer_state) == 0 && !is_caps_word_on()) {
-        record_current_rgblight();
-    }
+    record_rgblight_edited_by_vial();
 
+#ifdef USE_LAYER_SEGMENT
     if (user_config.is_rgb_per_layer) {
         for (int i = 1; i <= 8; i++) {
             rgblight_set_layer_state(i, layer_state_cmp(state, i));
         }
     }
 #else
-    const uint8_t prev_layer = current_layer;
-    if (get_highest_layer(default_layer_state) == 0 && prev_layer == 0 && !is_caps_word_on()) {
-        record_current_rgblight();
-    }
-
     current_layer = get_highest_layer(state);
     if (!is_caps_word_on()) {
         set_rgblight_on_current_layer();
     }
-
 #endif
 
     return state;
