@@ -132,6 +132,13 @@ void keyboard_post_init_user(void) {
 };
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
+#ifndef USE_LAYER_SEGMENT
+    const uint8_t prev_layer = current_layer;
+    if (get_highest_layer(default_layer_state) == 0 && prev_layer == 0 && !is_caps_word_on()) {
+        record_current_rgblight();
+    }
+#endif
+
     const uint8_t layer = get_highest_layer(state);
     set_rgblight_on_layer_of(layer);
 
