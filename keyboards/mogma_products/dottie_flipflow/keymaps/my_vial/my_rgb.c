@@ -2,6 +2,7 @@
 
 static hsv_t my_hsv;
 static uint8_t my_mode = 0;
+static uint8_t current_layer = 0;
 
 const rgblight_segment_t PROGMEM my_win_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
 const rgblight_segment_t PROGMEM my_mac_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
@@ -33,9 +34,25 @@ static void record_current_rgblight(void) {
     my_hsv.v = rgblight_get_val();
 }
 
-static void set_rgblight_on_default_layer(void) {
-    rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
-    rgblight_mode_noeeprom(my_mode);
+static void record_rgblight_edited_by_vial(void) {
+    if (get_highest_layer(default_layer_state) == 0 && !is_caps_word_on()) {
+        record_current_rgblight();
+    }
+}
+
+static void set_rgblight_on_layer_of(uint8_t layer) {
+    if (layer == 0) {
+        rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
+        rgblight_mode_noeeprom(my_mode);
+    } else if (layer < ARRAY_SIZE(my_rgb_layers)) {
+        const rgblight_segment_t* const cur_seg = my_rgb_layers[layer];
+        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
+        rgblight_mode_noeeprom(0);
+    }
+}
+
+static void set_rgblight_on_current_layer(void) {
+    set_rgblight_on_layer_of((current_layer == 0) ? get_highest_layer(default_layer_state) : current_layer);
 }
 
 void keyboard_post_init_user(void) {
@@ -44,26 +61,48 @@ void keyboard_post_init_user(void) {
 };
 
 layer_state_t default_layer_state_set_user(layer_state_t state) {
-    record_current_rgblight();
-    set_rgblight_on_default_layer();
+    record_rgblight_edited_by_vial();
+    set_rgblight_on_layer_of(get_highest_layer(state));
 
     return state;
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    if (get_highest_layer(state) == 0 || get_highest_layer(state) == 1) {
-        record_current_rgblight();
-    }
+    record_rgblight_edited_by_vial();
 
-    rgblight_set_layer_state(2, layer_state_cmp(state, 2));
-    rgblight_set_layer_state(3, layer_state_cmp(state, 3));
-    rgblight_set_layer_state(4, layer_state_cmp(state, 4));
-    rgblight_set_layer_state(5, layer_state_cmp(state, 5));
-    rgblight_set_layer_state(6, layer_state_cmp(state, 6));
-    rgblight_set_layer_state(7, layer_state_cmp(state, 7));
+    for (int i = 2; i < 8; i++) {
+        rgblight_set_layer_state(i, layer_state_cmp(state, i));
+    }
 
     return state;
 };
+
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case UG_NEXT:
+        case UG_PREV:
+            my_mode = rgblight_get_mode();
+            break;
+
+        case UG_HUED:
+        case UG_HUEU:
+            my_hsv.h = rgblight_get_hue();
+            break;
+
+        case UG_SATD:
+        case UG_SATU:
+            my_hsv.s = rgblight_get_sat();
+            break;
+
+        case UG_VALD:
+        case UG_VALU:
+            my_hsv.v = rgblight_get_val();
+            break;
+
+        default:
+            break;
+    }
+}
 
 void caps_word_set_user(bool active) {
     if (active) {
@@ -71,7 +110,7 @@ void caps_word_set_user(bool active) {
         rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
         rgblight_mode_noeeprom(0);
     } else {
-        set_rgblight_on_default_layer();
+        set_rgblight_on_current_layer();
     }
 }
 
