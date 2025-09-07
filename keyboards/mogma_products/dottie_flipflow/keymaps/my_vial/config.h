@@ -12,3 +12,5 @@
 #endif
 
 #define RGBLIGHT_LAYERS_RETAIN_VAL
+
+#define EECONFIG_USER_DATA_SIZE 34 // 4 byte * 8 layers + 1 byte * 2 flags = 34
