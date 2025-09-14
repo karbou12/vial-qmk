@@ -2,6 +2,7 @@
 #ifdef RGBLIGHT_LAYERS
 #include "my_keycodes.h"
 #include "my_eeconfig.h"
+#include "my_rgb.h"
 
 // rgblight default color of each layer.
 static const rgblight_segment_t PROGMEM my_win_default_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
@@ -18,11 +19,13 @@ static const rgblight_segment_t PROGMEM my_layerOFF_layer[] =    RGBLIGHT_LAYER_
 static const rgblight_segment_t PROGMEM my_reset_layer[] =       RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_WHITE});
 static const rgblight_segment_t PROGMEM my_turn_on_layer[] =     RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GOLD});
 static const rgblight_segment_t PROGMEM my_turn_off_layer[] =    RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_RED});
+static const rgblight_segment_t PROGMEM my_set_default_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GREEN});
 
 static const rgblight_segment_t * const PROGMEM my_blink_layers[] = RGBLIGHT_LAYERS_LIST(
     my_reset_layer,
     my_turn_on_layer,
-    my_turn_off_layer
+    my_turn_off_layer,
+    my_set_default_layer
 );
 
 static const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
@@ -56,14 +59,10 @@ static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
     }
 
     MY_DUMP_EECONFIG();
+    uprintf("%s, field:%u, hue:%u, sat:%u, val:%u\n", __FUNCTION__, field, p->hsv.h, p->hsv.s, use_val);
 
     rgblight_sethsv_noeeprom(p->hsv.h, p->hsv.s, use_val);
     rgblight_mode_noeeprom(p->mode);
-}
-
-static my_user_config_field_e my_get_current_layer_field(const layer_state_t state) {
-    const uint8_t layer = get_highest_layer(state);
-    return (layer == 0) ? get_highest_layer(default_layer_state) : layer;
 }
 
 static void my_record_rgblight_on_layer_of(const my_user_config_field_e field) {
@@ -131,14 +130,14 @@ void MY_RGB_eeconfig_init_mem(void) {
 
 void MY_RGB_eeconfig_init_user_datablock(void) {
     rgblight_enable_noeeprom();
-    my_set_rgblight_on_layer_of(my_get_current_layer_field(layer_state));
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
 }
 
 void MY_RGB_keyboard_post_init_user(void) {
     rgblight_layers = my_blink_layers;
 
     rgblight_enable_noeeprom();
-    my_set_rgblight_on_layer_of(my_get_current_layer_field(layer_state));
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
 
     my_is_keyboard_post_init_user_called = true;
 };
@@ -161,7 +160,7 @@ layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
         }
     }
 
-    my_set_rgblight_on_layer_of(state);
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(state));
 
     return state;
 }
@@ -188,7 +187,7 @@ layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
         }
     }
 
-    my_set_rgblight_on_layer_of(my_get_current_layer_field(state));
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(state));
 
     return state;
 };
@@ -199,7 +198,7 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MY_RGB_LAYER_SAME_VAL:
             if (record->event.pressed) {
                 const bool cur_flag = MY_EECONFIG_get_use_same_val_from_mem();
-                rgblight_blink_layer_repeat(cur_flag ? 2 : 1, 300, 2);
+                rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
                 MY_EECONFIG_update_use_same_val_to_eeprom(!cur_flag);
             }
             return false;
@@ -207,7 +206,7 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MY_RGB_LAYER_TOG:
             if (record->event.pressed) {
                 const bool cur_flag = MY_EECONFIG_get_rgb_per_layer_from_mem();
-                rgblight_blink_layer_repeat(cur_flag ? 2 : 1, 300, 2);
+                rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
                 MY_EECONFIG_update_rgb_per_layer_to_eeprom(!cur_flag);
             }
             return false;
@@ -250,7 +249,7 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case MY_RGB_LAYER_SAVE:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
-                rgblight_blink_layer_repeat(1, 200, 3);
+                rgblight_blink_layer_repeat(MY_BLINK_ON, 200, 3);
                 my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
             }
             return false;
@@ -289,7 +288,7 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MY_RGB_LAYER_SAT_DOWN:
         case MY_RGB_LAYER_VAL_UP:
         case MY_RGB_LAYER_VAL_DOWN:
-            my_record_rgblight_on_layer_of(my_get_current_layer_field(layer_state));
+            my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
 
         default:
             break;
@@ -314,7 +313,7 @@ void MY_RGB_caps_word_set_user(bool active) {
 #ifdef CONSOLE_ENABLE
         uprintf("%s, inactive def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
 #endif
-        my_set_rgblight_on_layer_of(my_get_current_layer_field(layer_state));
+        my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
     }
 }
 
