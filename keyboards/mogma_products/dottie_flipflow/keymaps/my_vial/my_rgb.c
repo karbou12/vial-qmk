@@ -155,12 +155,12 @@ layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
 
     // store rgblight of layer 0 automatically if it is changed on vial.
     if (my_is_keyboard_post_init_user_called) {
-        if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
+        if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
             my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
         }
     }
 
-    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(state));
+    my_set_rgblight_on_layer_of(get_highest_layer(state));
 
     return state;
 }
