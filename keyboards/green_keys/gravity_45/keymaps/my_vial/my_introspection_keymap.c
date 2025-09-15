@@ -1,6 +1,7 @@
 #include "my_eeconfig.c"
 #include "my_tap_hold.c"
 #include "my_rgb.c"
+#include "my_os.c"
 
 void eeconfig_init_user_datablock(void) {
 #ifdef CONSOLE_ENABLE
@@ -10,6 +11,7 @@ void eeconfig_init_user_datablock(void) {
 
     // init global memory
     MY_RGB_eeconfig_init_mem();
+    MY_OS_eeconfig_init_mem();
 
     MY_DUMP_EECONFIG();
 
@@ -45,6 +47,13 @@ void keyboard_post_init_user(void) {
     MY_DUMP_EECONFIG();
 }
 
+bool process_detected_host_os_user(os_variant_t detected_os) {
+    if (!MY_OS_process_detected_host_os_user(detected_os)) {
+        return false;
+    }
+    return true;
+}
+
 layer_state_t default_layer_state_set_user(layer_state_t state) {
     layer_state_t ret_state = MY_RGB_default_layer_state_set_user(state);
     return ret_state;
@@ -60,6 +69,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return false;
     }
     else if (!MY_RGB_process_record_user(keycode, record)) {
+        return false;
+    }
+    else if (!MY_OS_process_record_user(keycode, record)) {
         return false;
     }
     return true;

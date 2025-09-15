@@ -16,7 +16,8 @@
       {"name": "MY_RGB_LAYER_SAT_DOWN", "title": "Decrease Saturation RGB of current layer", "shortName": "LSATD"},
       {"name": "MY_RGB_LAYER_VAL_UP", "title": "Increase Value RGB of current layer", "shortName": "LVALU"},
       {"name": "MY_RGB_LAYER_VAL_DOWN", "title": "Decrease Value RGB of current layer", "shortName": "LVALD"},
-      {"name": "MY_RGB_LAYER_SAVE", "title": "Save current RGB as current layer's RGB", "shortName": "LSAVE"}
+      {"name": "MY_RGB_LAYER_SAVE", "title": "Save current RGB as current layer's RGB", "shortName": "LSAVE"},
+      {"name": "MY_OS_DEFAULT_LAYER", "title": "Set current layer as default layer of current OS", "shortName": "OSDF"}
     ],
     "layouts": {
       "keymap": [
