@@ -59,7 +59,9 @@ static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
     }
 
     MY_DUMP_EECONFIG();
+#ifdef CONSOLE_ENABLE
     uprintf("%s, field:%u, hue:%u, sat:%u, val:%u\n", __FUNCTION__, field, p->hsv.h, p->hsv.s, use_val);
+#endif
 
     rgblight_sethsv_noeeprom(p->hsv.h, p->hsv.s, use_val);
     rgblight_mode_noeeprom(p->mode);
