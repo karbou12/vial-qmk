@@ -13,7 +13,9 @@ bool MY_OS_process_detected_host_os_user(os_variant_t detected_os) {
     uprintf("============================================================\n");
     uprintf("%s arg_os:%u, func_os:%u, df:%u\n",
             __FUNCTION__, detected_os, detected_host_os(), MY_EECONFIG_get_os_default_layer_from_mem());
+    uprintf("%s, eeconfig:%s, %u, vial:%lu\n", __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
 #endif
+
     set_single_persistent_default_layer(MY_EECONFIG_get_os_default_layer_from_mem());
 
     return true;

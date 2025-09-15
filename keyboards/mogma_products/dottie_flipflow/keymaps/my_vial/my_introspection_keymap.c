@@ -27,9 +27,14 @@ void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE
     uprintf("============================================================\n");
     uprintf("%s, def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
+    uprintf("%s, eeconfig:%s, %u, vial:%lu\n", __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
 #endif
 
     MY_DUMP_EECONFIG();
+
+    if (!eeconfig_is_user_datablock_valid()) {
+        eeconfig_init_user_datablock();
+    }
 
     // read eeprom user datablock into global memory
     MY_EECONFIG_keyboard_post_init_user();
