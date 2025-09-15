@@ -15,4 +15,5 @@ enum custum_keycodes {
     MY_RGB_LAYER_VAL_UP,
     MY_RGB_LAYER_VAL_DOWN,
     MY_RGB_LAYER_SAVE,
+    MY_OS_DEFAULT_LAYER,
 };
