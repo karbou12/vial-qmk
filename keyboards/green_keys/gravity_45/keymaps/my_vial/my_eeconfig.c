@@ -120,7 +120,7 @@ bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 eeconfig_init_user_datablock();
                 MY_EECONFIG_update_all_data_to_user_datablock();
 
-                set_single_persistent_default_layer(MY_FIELD_LAYER0);
+                set_single_default_layer(MY_FIELD_LAYER0);
             }
             return false;
         default:
