@@ -57,7 +57,7 @@ static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
     }
 
     uint8_t use_val = p->hsv.v;
-    if (MY_EECONFIG_get_use_same_val_from_mem() && (field != MY_FIELD_LAYER0)) {
+    if (MY_EECONFIG_get_retain_val_from_mem() && (field != MY_FIELD_LAYER0)) {
         const my_hsvm_t* p_layer0 = MY_EECONFIG_get_hsvm_layer_from_mem(MY_FIELD_LAYER0);
         use_val = p_layer0->hsv.v;
     }
@@ -131,7 +131,7 @@ void MY_RGB_eeconfig_init_mem(void) {
     }
 
     my_user_config.is_rgb_per_layer = true;
-    my_user_config.to_use_same_val = true;
+    my_user_config.to_retain_val = true;
 }
 
 void MY_RGB_eeconfig_init_user_datablock(void) {
@@ -201,11 +201,11 @@ layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
 bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mod_state = get_mods();
     switch (keycode) {
-        case USR_RGB_LAYER_RETAIN_VAL:
+        case USR_RGB_RETAIN_VAL_TOG:
             if (record->event.pressed) {
-                const bool cur_flag = MY_EECONFIG_get_use_same_val_from_mem();
+                const bool cur_flag = MY_EECONFIG_get_retain_val_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
-                MY_EECONFIG_update_use_same_val_to_eeprom(!cur_flag);
+                MY_EECONFIG_update_retain_val_to_eeprom(!cur_flag);
             }
             return false;
 
