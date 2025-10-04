@@ -117,7 +117,7 @@ void MY_EECONFIG_keyboard_post_init_user(void) {
 
 bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case MY_RESET:
+        case USR_RESET:
             if (record->event.pressed) {
                 rgblight_blink_layer_repeat(MY_BLINK_RESET, 300, 3);
                 eeconfig_init_user_datablock();

@@ -201,7 +201,7 @@ layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
 bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mod_state = get_mods();
     switch (keycode) {
-        case MY_RGB_LAYER_SAME_VAL:
+        case USR_RGB_LAYER_RETAIN_VAL:
             if (record->event.pressed) {
                 const bool cur_flag = MY_EECONFIG_get_use_same_val_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
@@ -209,7 +209,7 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-        case MY_RGB_LAYER_TOG:
+        case USR_RGB_LAYER_TOG:
             if (record->event.pressed) {
                 const bool cur_flag = MY_EECONFIG_get_rgb_per_layer_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
@@ -217,43 +217,43 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-        case MY_RGB_LAYER_HUE_UP:
+        case USR_RGB_LAYER_HUE_UP:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_hue_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
             return true;
 
-        case MY_RGB_LAYER_HUE_DOWN:
+        case USR_RGB_LAYER_HUE_DOWN:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_hue_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
             return true;
 
-        case MY_RGB_LAYER_SAT_UP:
+        case USR_RGB_LAYER_SAT_UP:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_sat_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
             return true;
 
-        case MY_RGB_LAYER_SAT_DOWN:
+        case USR_RGB_LAYER_SAT_DOWN:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_sat_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
             return true;
 
-        case MY_RGB_LAYER_VAL_UP:
+        case USR_RGB_LAYER_VAL_UP:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_val_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
             return true;
 
-        case MY_RGB_LAYER_VAL_DOWN:
+        case USR_RGB_LAYER_VAL_DOWN:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_val_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
             return true;
 
-        case MY_RGB_LAYER_SAVE:
+        case USR_RGB_LAYER_SAVE:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 rgblight_blink_layer_repeat(MY_BLINK_ON, 200, 3);
                 my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
@@ -288,12 +288,12 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
             my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
             break;
 
-        case MY_RGB_LAYER_HUE_UP:
-        case MY_RGB_LAYER_HUE_DOWN:
-        case MY_RGB_LAYER_SAT_UP:
-        case MY_RGB_LAYER_SAT_DOWN:
-        case MY_RGB_LAYER_VAL_UP:
-        case MY_RGB_LAYER_VAL_DOWN:
+        case USR_RGB_LAYER_HUE_UP:
+        case USR_RGB_LAYER_HUE_DOWN:
+        case USR_RGB_LAYER_SAT_UP:
+        case USR_RGB_LAYER_SAT_DOWN:
+        case USR_RGB_LAYER_VAL_UP:
+        case USR_RGB_LAYER_VAL_DOWN:
             my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
             break;
 
