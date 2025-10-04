@@ -32,7 +32,7 @@ bool MY_OS_process_detected_host_os_user(os_variant_t detected_os) {
 
 bool MY_OS_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case MY_OS_DEFAULT_LAYER:
+        case USR_OS_DEFAULT_LAYER:
             if (record->event.pressed) {
                 rgblight_blink_layer_repeat(MY_BLINK_DF, 200, 3);
 
