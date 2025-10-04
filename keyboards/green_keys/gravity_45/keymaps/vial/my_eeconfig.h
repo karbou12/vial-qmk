@@ -15,7 +15,7 @@ typedef enum {
     MY_FIELD_LAYER7,
     MY_FIELD_LAYER8,
     MY_FIELD_LAYER_TOGGLE,
-    MY_FIELD_SAME_VAL,
+    MY_FIELD_RETAIN_VAL_TOGGLE,
     MY_FIELD_OS_UNSURE,
     MY_FIELD_OS_LINUX,
     MY_FIELD_OS_WINDOWS,
@@ -32,7 +32,7 @@ typedef struct {
 typedef struct {
     my_hsvm_t hsvm_layer[DYNAMIC_KEYMAP_LAYER_COUNT]; // rgb
     bool is_rgb_per_layer; // rgb
-    bool to_use_same_val; // rgb
+    bool to_retain_val; // rgb
     my_user_config_field_e os_default_layer[OS_IOS + 1]; // os
 } my_user_config_t;
 
@@ -49,8 +49,8 @@ extern void MY_EECONFIG_update_hsvm_layer_to_eeprom(const my_user_config_field_e
 extern bool MY_EECONFIG_get_rgb_per_layer_from_mem(void);
 extern void MY_EECONFIG_update_rgb_per_layer_to_eeprom(const bool is_rgb_per_layer);
 
-extern bool MY_EECONFIG_get_use_same_val_from_mem(void);
-extern void MY_EECONFIG_update_use_same_val_to_eeprom(const bool to_use_same_val);
+extern bool MY_EECONFIG_get_retain_val_from_mem(void);
+extern void MY_EECONFIG_update_retain_val_to_eeprom(const bool to_retain_val);
 
 extern my_user_config_field_e MY_EECONFIG_get_os_default_layer_from_mem(void);
 extern void MY_EECONFIG_update_os_default_layer_to_eeprom(const my_user_config_field_e field);
