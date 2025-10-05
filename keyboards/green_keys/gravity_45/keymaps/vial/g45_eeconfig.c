@@ -1,9 +1,9 @@
 // Copyright 2025 Tano Karbou (github: karbou12 / X: @karbou_12)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "my_eeconfig.h"
-#include "my_keycodes.h"
-#include "my_rgb.h"
+#include "g45_eeconfig.h"
+#include "g45_keycodes.h"
+#include "g45_rgb.h"
 
 my_user_config_t my_user_config = {0};
 

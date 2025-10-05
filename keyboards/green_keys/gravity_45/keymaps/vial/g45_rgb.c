@@ -3,9 +3,9 @@
 
 #include "config.h"
 #ifdef RGBLIGHT_LAYERS
-#include "my_keycodes.h"
-#include "my_eeconfig.h"
-#include "my_rgb.h"
+#include "g45_keycodes.h"
+#include "g45_eeconfig.h"
+#include "g45_rgb.h"
 
 const rgblight_segment_t PROGMEM my_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_TURQUOISE});
 const rgblight_segment_t PROGMEM my_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});

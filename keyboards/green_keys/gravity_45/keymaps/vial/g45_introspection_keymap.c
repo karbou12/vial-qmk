@@ -1,9 +1,9 @@
 // Copyright 2025 Tano Karbou (github: karbou12 / X: @karbou_12)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "my_eeconfig.c"
-#include "my_rgb.c"
-#include "my_os.c"
+#include "g45_eeconfig.c"
+#include "g45_rgb.c"
+#include "g45_os.c"
 
 void eeconfig_init_user_datablock(void) {
 #ifdef CONSOLE_ENABLE

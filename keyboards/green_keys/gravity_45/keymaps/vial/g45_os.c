@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifdef OS_DETECTION_ENABLE
-#include "my_rgb.h"
+#include "g45_rgb.h"
 
 void MY_OS_eeconfig_init_mem(void) {
     uint8_t* p = my_user_config.os_default_layer;
