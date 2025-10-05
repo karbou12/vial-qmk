@@ -4,8 +4,8 @@
 #pragma once
 
 typedef enum {
-    MY_BLINK_RESET = 0,
-    MY_BLINK_ON,
-    MY_BLINK_OFF,
-    MY_BLINK_DF
-} my_blink_layer_e;
+    G45_BLINK_RESET = 0,
+    G45_BLINK_ON,
+    G45_BLINK_OFF,
+    G45_BLINK_DF
+} g45_blink_layer_e;
