@@ -70,11 +70,9 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!MY_EECONFIG_process_record_user(keycode, record)) {
         return false;
-    }
-    else if (!MY_RGB_process_record_user(keycode, record)) {
+    } else if (!MY_RGB_process_record_user(keycode, record)) {
         return false;
-    }
-    else if (!MY_OS_process_record_user(keycode, record)) {
+    } else if (!MY_OS_process_record_user(keycode, record)) {
         return false;
     }
     return true;
