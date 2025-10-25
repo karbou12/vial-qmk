@@ -17,6 +17,7 @@ void my_dump_eeconfig(const char* const func) {
     }
     uprintf("is_rgb_per_layer:%s\n", my_user_config.is_rgb_per_layer ? "true" : "false");
     uprintf("to_retain_val:%s\n", my_user_config.to_retain_val ? "true" : "false");
+    uprintf("is_auto_save_rgb:%s\n", my_user_config.is_auto_save_rgb ? "true" : "false");
 
     my_user_config_field_e* p_os = my_user_config.os_default_layer;
     for (int i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p_os++) {
@@ -75,6 +76,14 @@ bool MY_EECONFIG_get_rgb_per_layer_from_mem(void) {
 void MY_EECONFIG_update_rgb_per_layer_to_eeprom(const bool is_rgb_per_layer) {
     my_user_config.is_rgb_per_layer = is_rgb_per_layer;
     eeconfig_update_user_datablock(&is_rgb_per_layer, my_get_offset(MY_FIELD_LAYER_TOGGLE), sizeof(is_rgb_per_layer));
+
+bool MY_EECONFIG_get_auto_save_rgb_from_mem(void) {
+    return my_user_config.is_auto_save_rgb;
+}
+
+void MY_EECONFIG_update_auto_save_rgb_to_eeprom(const bool is_auto_save_rgb) {
+    my_user_config.is_auto_save_rgb = is_auto_save_rgb;
+    eeconfig_update_user_datablock(&is_auto_save_rgb, my_get_offset(MY_FIELD_AUTO_SAVE_TOGGLE), sizeof(uint8_t));
 }
 
 bool MY_EECONFIG_get_retain_val_from_mem(void) {

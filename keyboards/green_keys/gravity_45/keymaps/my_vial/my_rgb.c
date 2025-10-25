@@ -140,6 +140,7 @@ void MY_RGB_eeconfig_init_mem(void) {
 
     my_user_config.is_rgb_per_layer = true;
     my_user_config.to_retain_val = true;
+    my_user_config.is_auto_save_rgb = true;
 }
 
 void MY_RGB_keyboard_post_init_user(void) {
@@ -167,7 +168,7 @@ layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
     if (my_is_keyboard_post_init_user_called) {
         if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
             my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-        } else if (!my_is_rgblight_set_by_key && !my_is_retain_val_toggled) {
+        } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() && !my_is_rgblight_set_by_key && !my_is_retain_val_toggled) {
             my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
         }
     }
@@ -200,7 +201,7 @@ layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
     if (my_is_keyboard_post_init_user_called) {
         if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
             my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-        } else if (!my_is_rgblight_set_by_key && !my_is_retain_val_toggled) {
+        } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() &&!my_is_rgblight_set_by_key && !my_is_retain_val_toggled) {
             my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
         }
     }
@@ -271,10 +272,11 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return true;
 
-        case USR_RGB_LAYER_SAVE:
+        case USR_RGB_AUTO_SAVE_TOG:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
-                rgblight_blink_layer_repeat(MY_BLINK_ON, 200, 3);
-                my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
+                const bool cur_flag = MY_EECONFIG_get_auto_save_rgb_from_mem();
+                rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
+                MY_EECONFIG_update_auto_save_rgb_to_eeprom(!cur_flag);
             }
             return false;
 
