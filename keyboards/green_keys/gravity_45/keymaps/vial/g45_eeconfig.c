@@ -17,6 +17,7 @@ void g45_dump_eeconfig(const char* const func) {
     }
     uprintf("is_rgb_per_layer:%s\n", g45_user_config.is_rgb_per_layer ? "true" : "false");
     uprintf("to_retain_val:%s\n", g45_user_config.to_retain_val ? "true" : "false");
+    uprintf("is_auto_save_rgb:%s\n", g45_user_config.is_auto_save_rgb ? "true" : "false");
 
     g45_user_config_field_e* p_os = g45_user_config.os_default_layer;
     for (int i = 0; i < ARRAY_SIZE(g45_user_config.os_default_layer); i++, p_os++) {
@@ -75,6 +76,14 @@ bool G45_EECONFIG_get_rgb_per_layer_from_mem(void) {
 void G45_EECONFIG_update_rgb_per_layer_to_eeprom(const bool is_rgb_per_layer) {
     g45_user_config.is_rgb_per_layer = is_rgb_per_layer;
     eeconfig_update_user_datablock(&is_rgb_per_layer, g45_get_offset(G45_FIELD_LAYER_TOGGLE), sizeof(is_rgb_per_layer));
+
+bool G45_EECONFIG_get_auto_save_rgb_from_mem(void) {
+    return g45_user_config.is_auto_save_rgb;
+}
+
+void G45_EECONFIG_update_auto_save_rgb_to_eeprom(const bool is_auto_save_rgb) {
+    g45_user_config.is_auto_save_rgb = is_auto_save_rgb;
+    eeconfig_update_user_datablock(&is_auto_save_rgb, g45_get_offset(G45_FIELD_AUTO_SAVE_TOGGLE), sizeof(uint8_t));
 }
 
 bool G45_EECONFIG_get_retain_val_from_mem(void) {

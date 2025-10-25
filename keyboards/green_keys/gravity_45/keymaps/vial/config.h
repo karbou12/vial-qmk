@@ -12,4 +12,4 @@
 #define RGBLIGHT_LAYERS_RETAIN_VAL
 #define RGBLIGHT_LAYER_BLINK
 
-#define EECONFIG_USER_DATA_SIZE 43 // 4 byte * 9 layers + 1 byte * 2 flags  + 1 byte * 5= 43
+#define EECONFIG_USER_DATA_SIZE 44 // 4 byte * 9 layers + 1 byte * 3 flags  + 1 byte * 5 = 44

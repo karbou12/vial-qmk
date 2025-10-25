@@ -140,6 +140,7 @@ void G45_RGB_eeconfig_init_mem(void) {
 
     g45_user_config.is_rgb_per_layer = true;
     g45_user_config.to_retain_val = true;
+    g45_user_config.is_auto_save_rgb = true;
 }
 
 void G45_RGB_keyboard_post_init_user(void) {
@@ -167,7 +168,7 @@ layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state) {
     if (g45_is_keyboard_post_init_user_called) {
         if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
             g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
-        } else if (!g45_is_rgblight_set_by_key && !g45_is_retain_val_toggled) {
+        } else if (G45_EECONFIG_get_auto_save_rgb_from_mem() && !g45_is_rgblight_set_by_key && !g45_is_retain_val_toggled) {
             g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
         }
     }
@@ -200,7 +201,7 @@ layer_state_t G45_RGB_layer_state_set_user(layer_state_t state) {
     if (g45_is_keyboard_post_init_user_called) {
         if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
             g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
-        } else if (!g45_is_rgblight_set_by_key && !g45_is_retain_val_toggled) {
+        } else if (G45_EECONFIG_get_auto_save_rgb_from_mem() &&!g45_is_rgblight_set_by_key && !g45_is_retain_val_toggled) {
             g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
         }
     }
@@ -271,10 +272,11 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return true;
 
-        case USR_RGB_LAYER_SAVE:
+        case USR_RGB_AUTO_SAVE_TOG:
             if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
-                rgblight_blink_layer_repeat(G45_BLINK_ON, 200, 3);
-                g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+                const bool cur_flag = G45_EECONFIG_get_auto_save_rgb_from_mem();
+                rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
+                G45_EECONFIG_update_auto_save_rgb_to_eeprom(!cur_flag);
             }
             return false;
 

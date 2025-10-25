@@ -15,6 +15,7 @@ typedef enum {
     G45_FIELD_LAYER7,
     G45_FIELD_LAYER8,
     G45_FIELD_LAYER_TOGGLE,
+    G45_FIELD_AUTO_SAVE_TOGGLE,
     G45_FIELD_RETAIN_VAL_TOGGLE,
     G45_FIELD_OS_UNSURE,
     G45_FIELD_OS_LINUX,
@@ -32,6 +33,7 @@ typedef struct {
 typedef struct {
     g45_hsvm_t hsvm_layer[DYNAMIC_KEYMAP_LAYER_COUNT]; // rgb
     bool is_rgb_per_layer; // rgb
+    bool is_auto_save_rgb; //rgb
     bool to_retain_val; // rgb
     g45_user_config_field_e os_default_layer[OS_IOS + 1]; // os
 } g45_user_config_t;
@@ -48,6 +50,9 @@ extern void G45_EECONFIG_update_hsvm_layer_to_eeprom(const g45_user_config_field
 
 extern bool G45_EECONFIG_get_rgb_per_layer_from_mem(void);
 extern void G45_EECONFIG_update_rgb_per_layer_to_eeprom(const bool is_rgb_per_layer);
+
+extern bool G45_EECONFIG_get_auto_save_rgb_from_mem(void);
+extern void G45_EECONFIG_update_auto_save_rgb_to_eeprom(const bool is_rgb_per_layer);
 
 extern bool G45_EECONFIG_get_retain_val_from_mem(void);
 extern void G45_EECONFIG_update_retain_val_to_eeprom(const bool to_retain_val);
