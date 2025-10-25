@@ -21,8 +21,6 @@ void eeconfig_init_user_datablock(void) {
     // store global memory into eeprom user datablock
     MY_EECONFIG_eeconfig_init_user_datablock();
 
-    // init rgblight
-    MY_RGB_eeconfig_init_user_datablock();
     MY_DUMP_EECONFIG();
 }
 

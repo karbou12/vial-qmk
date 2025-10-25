@@ -49,6 +49,10 @@ static bool my_is_rgblight_set_by_key = false;
 static bool my_is_retain_val_toggled = false;
 
 static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
+    if (!my_is_keyboard_post_init_user_called) {
+        return;
+    }
+
     if (is_caps_word_on()) {
         return;
     }
@@ -138,18 +142,12 @@ void MY_RGB_eeconfig_init_mem(void) {
     my_user_config.to_retain_val = true;
 }
 
-void MY_RGB_eeconfig_init_user_datablock(void) {
-    rgblight_enable_noeeprom();
-    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
-}
-
 void MY_RGB_keyboard_post_init_user(void) {
+    my_is_keyboard_post_init_user_called = true;
     rgblight_layers = my_blink_layers;
 
     rgblight_enable_noeeprom();
     my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
-
-    my_is_keyboard_post_init_user_called = true;
 };
 
 layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
