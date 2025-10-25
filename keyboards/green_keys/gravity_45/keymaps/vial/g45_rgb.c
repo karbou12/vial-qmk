@@ -49,6 +49,10 @@ static bool g45_is_rgblight_set_by_key = false;
 static bool g45_is_retain_val_toggled = false;
 
 static void g45_set_rgblight_on_layer_of(const g45_user_config_field_e field) {
+    if (!g45_is_keyboard_post_init_user_called) {
+        return;
+    }
+
     if (is_caps_word_on()) {
         return;
     }
@@ -138,18 +142,12 @@ void G45_RGB_eeconfig_init_mem(void) {
     g45_user_config.to_retain_val = true;
 }
 
-void G45_RGB_eeconfig_init_user_datablock(void) {
-    rgblight_enable_noeeprom();
-    g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
-}
-
 void G45_RGB_keyboard_post_init_user(void) {
+    g45_is_keyboard_post_init_user_called = true;
     rgblight_layers = g45_blink_layers;
 
     rgblight_enable_noeeprom();
     g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
-
-    g45_is_keyboard_post_init_user_called = true;
 };
 
 layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state) {
