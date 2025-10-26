@@ -9,3 +9,5 @@ typedef enum {
     MY_BLINK_OFF,
     MY_BLINK_DF
 } my_blink_layer_e;
+
+extern void MY_RGB_eeconfig_migrate_mem(const my_user_config_u* bk, const uint32_t prev_ver);

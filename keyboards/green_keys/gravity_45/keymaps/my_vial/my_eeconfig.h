@@ -14,9 +14,7 @@ typedef enum {
     MY_FIELD_LAYER6,
     MY_FIELD_LAYER7,
     MY_FIELD_LAYER8,
-    MY_FIELD_LAYER_TOGGLE,
-    MY_FIELD_AUTO_SAVE_TOGGLE,
-    MY_FIELD_RETAIN_VAL_TOGGLE,
+    MY_FIELD_FLAGS,
     MY_FIELD_OS_UNSURE,
     MY_FIELD_OS_LINUX,
     MY_FIELD_OS_WINDOWS,
@@ -33,10 +31,35 @@ typedef struct {
 typedef struct {
     my_hsvm_t hsvm_layer[DYNAMIC_KEYMAP_LAYER_COUNT]; // rgb
     bool is_rgb_per_layer; // rgb
-    bool is_auto_save_rgb; //rgb
     bool to_retain_val; // rgb
     my_user_config_field_e os_default_layer[OS_IOS + 1]; // os
-} my_user_config_t;
+} my_user_config_t_v1;
+#define MY_BASE_FW_VER_OF_USER_CONFIG_V1 MY_CONCAT_VERSION(0, 0, 5)
+
+typedef struct {
+    my_hsvm_t hsvm_layer[DYNAMIC_KEYMAP_LAYER_COUNT]; // rgb
+    union {
+        uint8_t flag_raw;
+        struct {
+            bool is_rgb_per_layer : 1; // rgb
+            bool is_auto_save_rgb : 1; //rgb
+            bool to_retain_val : 1; // rgb
+            uint8_t dummy : 5;
+        } flags;
+    };
+    my_user_config_field_e os_default_layer[OS_IOS + 1]; // os
+} my_user_config_t_v2;
+#define MY_BASE_FW_VER_OF_USER_CONFIG_V2 MY_CONCAT_VERSION(1, 0, 0)
+
+typedef union {
+    my_user_config_t_v2 v2;
+    my_user_config_t_v1 v1;
+} my_user_config_u;
+
+#define MY_USER_CONFIG_VERSION 2
+#define MY_USER_CONFIG_V_CONCAT(n) my_user_config_t_v ## n
+#define MY_USER_CONFIG_V(n)  MY_USER_CONFIG_V_CONCAT(n)
+#define my_user_config_t MY_USER_CONFIG_V(MY_USER_CONFIG_VERSION)
 
 extern my_user_config_t my_user_confg;
 

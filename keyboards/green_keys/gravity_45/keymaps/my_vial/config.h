@@ -19,4 +19,15 @@
 #define RGBLIGHT_LAYERS_RETAIN_VAL
 #define RGBLIGHT_LAYER_BLINK
 
-#define EECONFIG_USER_DATA_SIZE 44 // 4 byte * 9 layers + 1 byte * 3 flags  + 1 byte * 5 = 44
+#define EECONFIG_USER_DATA_SIZE 43 // keep the largest size ever.
+
+#define MY_FW_VER_MAJOR 1
+#define MY_FW_VER_MINOR 0
+#define MY_FW_VER_PATCH 0
+
+#define MY_FW_VER_MAJOR_OFFSET 8
+#define MY_FW_VER_MINOR_OFFSET 4
+
+#define MY_CONCAT_VERSION(M, m, p) ((M << MY_FW_VER_MAJOR_OFFSET) | (m << MY_FW_VER_MINOR_OFFSET) | p)
+#define FVS(x) MY_FW_VER_ ## x
+#define EECONFIG_USER_DATA_VERSION MY_CONCAT_VERSION(FVS(MAJOR), FVS(MINOR), FVS(PATCH))

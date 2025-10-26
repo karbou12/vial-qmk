@@ -5,11 +5,22 @@
 #include "my_tap_hold.c"
 #include "my_rgb.c"
 #include "my_os.c"
+#include <quantum/nvm/eeprom/nvm_eeprom_eeconfig_internal.h> // for EECONFIG_USER
+
+#ifdef CONSOLE_ENABLE
+static uint32_t eeconfig_init_ver = 0;
+static uint32_t post_init_ver = 0;
+#endif
 
 void eeconfig_init_user_datablock(void) {
 #ifdef CONSOLE_ENABLE
+    eeconfig_init_ver = eeprom_read_dword(EECONFIG_USER);
     uprintf("============================================================\n");
     uprintf("%s, def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
+#endif
+#ifdef CONSOLE_ENABLE
+    uprintf("%s, eeconfig:%s, prev ver:%04lx, cur ver:%04x, vial:%lu\n",
+            __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", eeconfig_init_ver, EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
 #endif
 
     // init global memory
@@ -20,21 +31,23 @@ void eeconfig_init_user_datablock(void) {
 
     // store global memory into eeprom user datablock
     MY_EECONFIG_eeconfig_init_user_datablock();
-
-    MY_DUMP_EECONFIG();
 }
 
 void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE
+    post_init_ver = eeprom_read_dword(EECONFIG_USER);
     uprintf("============================================================\n");
     uprintf("%s, def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
-    uprintf("%s, eeconfig:%s, %u, vial:%lu\n", __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
+    uprintf("%s, eeconfig:%s, prev ver:%04lx, cur ver:%04x, vial:%lu\n",
+            __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", post_init_ver, EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
 #endif
 
     MY_DUMP_EECONFIG();
 
     if (!eeconfig_is_user_datablock_valid()) {
-        eeconfig_init_user_datablock();
+        if (!MY_EECONFIG_migrate_user_datablock()) {
+            eeconfig_init_user_datablock();
+        }
     }
 
     // read eeprom user datablock into global memory
@@ -49,9 +62,20 @@ void keyboard_post_init_user(void) {
 }
 
 bool process_detected_host_os_user(os_variant_t detected_os) {
+#ifdef CONSOLE_ENABLE
+    uprintf("============================================================\n");
+    uprintf("%s, def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
+    uprintf("%s, eeconfig:%s, prev ver:%04lx, cur ver:%04x, vial:%lu\n",
+            __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", eeprom_read_dword(EECONFIG_USER), EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
+    uprintf("%s, init ver:%04lx, post ver:%04lx\n", __FUNCTION__, eeconfig_init_ver, post_init_ver);
+#endif
+
+    MY_DUMP_EECONFIG();
+
     if (!MY_OS_process_detected_host_os_user(detected_os)) {
         return false;
     }
+
     return true;
 }
 
