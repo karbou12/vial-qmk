@@ -11,6 +11,22 @@ void G45_OS_eeconfig_init_mem(void) {
     }
 }
 
+void G45_OS_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t prev_ver) {
+    if (!bk || prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V1) {
+        return;
+    }
+
+    if (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) {
+        G45_OS_eeconfig_init_mem();
+
+        uint8_t* p = g45_user_config.os_default_layer;
+        const uint8_t* bk_p = bk->v1.os_default_layer;
+        for (int i = 0; i < ARRAY_SIZE(g45_user_config.os_default_layer); i++, p++, bk_p++) {
+            *p = *bk_p;
+        }
+    }
+}
+
 bool G45_OS_process_detected_host_os_user(os_variant_t detected_os) {
     const g45_user_config_field_e cur_layer = G45_EECONFIG_get_current_layer_field(layer_state);
     const g45_user_config_field_e os_layer = G45_EECONFIG_get_os_default_layer_from_mem();
@@ -19,7 +35,6 @@ bool G45_OS_process_detected_host_os_user(os_variant_t detected_os) {
     uprintf("============================================================\n");
     uprintf("%s arg_os:%u, func_os:%u, df:%u, cur_layer:%u\n",
             __FUNCTION__, detected_os, detected_host_os(), os_layer, cur_layer);
-    uprintf("%s, eeconfig:%s, %u, vial:%lu\n", __FUNCTION__, eeconfig_is_user_datablock_valid() ? "valid" : "invalid", EECONFIG_USER_DATA_VERSION, VIAL_PROTOCOL_VERSION);
 #endif
 
     // if pdf may be set as non-zero, keep pdf. else, set os df.

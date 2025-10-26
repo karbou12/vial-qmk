@@ -138,9 +138,32 @@ void G45_RGB_eeconfig_init_mem(void) {
         p->mode = RGBLIGHT_MODE_STATIC_LIGHT;
     }
 
-    g45_user_config.is_rgb_per_layer = true;
-    g45_user_config.to_retain_val = true;
-    g45_user_config.is_auto_save_rgb = true;
+    g45_user_config.flag_raw = 0u;
+    g45_user_config.flags.is_rgb_per_layer = true;
+    g45_user_config.flags.is_auto_save_rgb = true;
+    g45_user_config.flags.to_retain_val = true;
+}
+
+void G45_RGB_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t prev_ver) {
+    if (!bk || prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V1) {
+        return;
+    }
+
+    if (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) {
+        G45_RGB_eeconfig_init_mem();
+
+        g45_hsvm_t* p = g45_user_config.hsvm_layer;
+        const g45_hsvm_t* bk_p = bk->v1.hsvm_layer;
+        for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++, bk_p++) {
+            p->hsv.h = bk_p->hsv.h;
+            p->hsv.s = bk_p->hsv.s;
+            p->hsv.v = bk_p->hsv.v;
+            p->mode = bk_p->mode;
+        }
+
+        g45_user_config.flags.is_rgb_per_layer = bk->v1.is_rgb_per_layer;
+        g45_user_config.flags.to_retain_val = bk->v1.to_retain_val;
+    }
 }
 
 void G45_RGB_keyboard_post_init_user(void) {
