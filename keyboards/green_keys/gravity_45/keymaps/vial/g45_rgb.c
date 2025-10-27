@@ -149,20 +149,26 @@ void G45_RGB_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t pr
         return;
     }
 
+    G45_RGB_eeconfig_init_mem();
+    g45_hsvm_t* p = g45_user_config.hsvm_layer;
+
+    const g45_hsvm_t* bk_p = (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.hsvm_layer
+                                                                          : bk->v2.hsvm_layer;
+
+    for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++, bk_p++) {
+        p->hsv.h = bk_p->hsv.h;
+        p->hsv.s = bk_p->hsv.s;
+        p->hsv.v = bk_p->hsv.v;
+        p->mode = bk_p->mode;
+    }
+
     if (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) {
-        G45_RGB_eeconfig_init_mem();
-
-        g45_hsvm_t* p = g45_user_config.hsvm_layer;
-        const g45_hsvm_t* bk_p = bk->v1.hsvm_layer;
-        for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++, bk_p++) {
-            p->hsv.h = bk_p->hsv.h;
-            p->hsv.s = bk_p->hsv.s;
-            p->hsv.v = bk_p->hsv.v;
-            p->mode = bk_p->mode;
-        }
-
         g45_user_config.flags.is_rgb_per_layer = bk->v1.is_rgb_per_layer;
         g45_user_config.flags.to_retain_val = bk->v1.to_retain_val;
+    } else {
+        g45_user_config.flags.is_rgb_per_layer = bk->v2.flags.is_rgb_per_layer;
+        g45_user_config.flags.is_auto_save_rgb = bk->v2.flags.is_auto_save_rgb;
+        g45_user_config.flags.to_retain_val = bk->v2.flags.to_retain_val;
     }
 }
 

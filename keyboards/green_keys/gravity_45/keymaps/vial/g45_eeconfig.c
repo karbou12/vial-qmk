@@ -163,39 +163,37 @@ bool G45_EECONFIG_migrate_user_datablock(void) {
         uprintf("%s : it may be the first vial install or very early version is installed.\n", __FUNCTION__);
 #endif
         return false;
-    } else if (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) {
-        // backup current eeprom data.
-        g45_user_config_u g45_user_config_bk;
 
-        // here, use eeprom func directly because eeconfig_read_user_datablock just init memory if version is invalid.
-#if 1
-        void *ee_start = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK);
-        void *ee_end   = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK + sizeof(g45_user_config_t_v1));
-        eeprom_read_block(&g45_user_config_bk, ee_start, ee_end - ee_start);
-#else
-        eeconfig_read_user_datablock(&g45_user_config_bk, 0, sizeof(g45_user_config_t_v1));
-#endif
-
-        const g45_user_config_t_v1 g45_user_config_init = {0};
-        if (memcmp(&g45_user_config_bk, &g45_user_config_init, sizeof(g45_user_config_t_v1)) == 0) {
-#ifdef CONSOLE_ENABLE
-            uprintf("%s : global memory has no data.\n", __FUNCTION__);
-#endif
-            return false;
-        }
-
-        // migrate global memory
-        G45_RGB_eeconfig_migrate_mem(&g45_user_config_bk, prev_ver);
-        G45_OS_eeconfig_migrate_mem(&g45_user_config_bk, prev_ver);
-
-        // store global memory into eeprom user datablock
-        G45_EECONFIG_eeconfig_init_user_datablock();
-    } else {
-#ifdef CONSOLE_ENABLE
-        uprintf("%s : it is the latest user config version.\n", __FUNCTION__);
-#endif
-        return true;
     }
+
+    // backup current eeprom data.
+    g45_user_config_u g45_user_config_bk;
+    const uint32_t bk_size = (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) ? sizeof(g45_user_config_t_v1)
+                                                                           : sizeof(g45_user_config_t);
+
+#if 1
+    // here, use eeprom func directly because eeconfig_read_user_datablock just init memory if version is invalid.
+    void *ee_start = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK);
+    void *ee_end   = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK + bk_size);
+    eeprom_read_block(&g45_user_config_bk, ee_start, ee_end - ee_start);
+#else
+    eeconfig_read_user_datablock(&g45_user_config_bk, 0, bk_size);
+#endif
+
+    const g45_user_config_u g45_user_config_init = {0};
+    if (memcmp(&g45_user_config_bk, &g45_user_config_init, bk_size) == 0) {
+#ifdef CONSOLE_ENABLE
+        uprintf("%s : global memory has no data.\n", __FUNCTION__);
+#endif
+        return false;
+    }
+
+    // migrate global memory
+    G45_RGB_eeconfig_migrate_mem(&g45_user_config_bk, prev_ver);
+    G45_OS_eeconfig_migrate_mem(&g45_user_config_bk, prev_ver);
+
+    // store global memory into eeprom user datablock
+    G45_EECONFIG_eeconfig_init_user_datablock();
 
     return true;
 }
