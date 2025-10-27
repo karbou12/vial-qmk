@@ -163,39 +163,37 @@ bool MY_EECONFIG_migrate_user_datablock(void) {
         uprintf("%s : it may be the first vial install or very early version is installed.\n", __FUNCTION__);
 #endif
         return false;
-    } else if (prev_ver < MY_BASE_FW_VER_OF_USER_CONFIG_V2) {
-        // backup current eeprom data.
-        my_user_config_u my_user_config_bk;
 
-        // here, use eeprom func directly because eeconfig_read_user_datablock just init memory if version is invalid.
-#if 1
-        void *ee_start = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK);
-        void *ee_end   = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK + sizeof(my_user_config_t_v1));
-        eeprom_read_block(&my_user_config_bk, ee_start, ee_end - ee_start);
-#else
-        eeconfig_read_user_datablock(&my_user_config_bk, 0, sizeof(my_user_config_t_v1));
-#endif
-
-        const my_user_config_t_v1 my_user_config_init = {0};
-        if (memcmp(&my_user_config_bk, &my_user_config_init, sizeof(my_user_config_t_v1)) == 0) {
-#ifdef CONSOLE_ENABLE
-            uprintf("%s : global memory has no data.\n", __FUNCTION__);
-#endif
-            return false;
-        }
-
-        // migrate global memory
-        MY_RGB_eeconfig_migrate_mem(&my_user_config_bk, prev_ver);
-        MY_OS_eeconfig_migrate_mem(&my_user_config_bk, prev_ver);
-
-        // store global memory into eeprom user datablock
-        MY_EECONFIG_eeconfig_init_user_datablock();
-    } else {
-#ifdef CONSOLE_ENABLE
-        uprintf("%s : it is the latest user config version.\n", __FUNCTION__);
-#endif
-        return true;
     }
+
+    // backup current eeprom data.
+    my_user_config_u my_user_config_bk;
+    const uint32_t bk_size = (prev_ver < MY_BASE_FW_VER_OF_USER_CONFIG_V2) ? sizeof(my_user_config_t_v1)
+                                                                           : sizeof(my_user_config_t);
+
+#if 1
+    // here, use eeprom func directly because eeconfig_read_user_datablock just init memory if version is invalid.
+    void *ee_start = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK);
+    void *ee_end   = (void *)(uintptr_t)(EECONFIG_USER_DATABLOCK + bk_size);
+    eeprom_read_block(&my_user_config_bk, ee_start, ee_end - ee_start);
+#else
+    eeconfig_read_user_datablock(&my_user_config_bk, 0, bk_size);
+#endif
+
+    const my_user_config_u my_user_config_init = {0};
+    if (memcmp(&my_user_config_bk, &my_user_config_init, bk_size) == 0) {
+#ifdef CONSOLE_ENABLE
+        uprintf("%s : global memory has no data.\n", __FUNCTION__);
+#endif
+        return false;
+    }
+
+    // migrate global memory
+    MY_RGB_eeconfig_migrate_mem(&my_user_config_bk, prev_ver);
+    MY_OS_eeconfig_migrate_mem(&my_user_config_bk, prev_ver);
+
+    // store global memory into eeprom user datablock
+    MY_EECONFIG_eeconfig_init_user_datablock();
 
     return true;
 }

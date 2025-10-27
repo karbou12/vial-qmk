@@ -16,14 +16,13 @@ void MY_OS_eeconfig_migrate_mem(const my_user_config_u* bk, const uint32_t prev_
         return;
     }
 
-    if (prev_ver < MY_BASE_FW_VER_OF_USER_CONFIG_V2) {
-        MY_OS_eeconfig_init_mem();
+    MY_OS_eeconfig_init_mem();
 
-        uint8_t* p = my_user_config.os_default_layer;
-        const uint8_t* bk_p = bk->v1.os_default_layer;
-        for (int i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p++, bk_p++) {
-            *p = *bk_p;
-        }
+    uint8_t* p = my_user_config.os_default_layer;
+    const uint8_t* bk_p = (prev_ver < MY_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.os_default_layer
+                                                                        : bk->v2.os_default_layer;
+    for (int i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p++, bk_p++) {
+        *p = *bk_p;
     }
 }
 
