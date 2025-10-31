@@ -5,6 +5,7 @@
 #include "my_tap_hold.c"
 #include "my_rgb.c"
 #include "my_os.c"
+#include "my_combo.c"
 #include <quantum/nvm/eeprom/nvm_eeprom_eeconfig_internal.h> // for EECONFIG_USER
 
 #ifdef CONSOLE_ENABLE
@@ -59,6 +60,8 @@ void keyboard_post_init_user(void) {
     MY_RGB_keyboard_post_init_user();
 
     MY_DUMP_EECONFIG();
+
+    MY_COMBO_post_init_user();
 }
 
 bool process_detected_host_os_user(os_variant_t detected_os) {
