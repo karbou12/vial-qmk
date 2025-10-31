@@ -44,6 +44,11 @@ _Static_assert(VIAL_UNLOCK_NUM_KEYS < 15, "Max 15 unlock keys");
 _Static_assert(sizeof(vial_unlock_combo_rows) == sizeof(vial_unlock_combo_cols), "The number of unlock cols and rows should be the same");
 #endif
 
+#ifdef USE_LOCAL_COMBO
+extern combo_t local_key_combos[];
+extern uint16_t local_combo_size;
+#endif
+
 #ifdef USE_LOCAL_KEY_OVERRIDES
 extern key_override_t *key_overrides[];
 extern uint16_t key_overrides_raw_size;
@@ -275,6 +280,17 @@ void vial_handle_cmd(uint8_t *msg, uint8_t length) {
                 uint8_t idx = msg[3];
                 vial_combo_entry_t entry = { 0 };
                 msg[0] = dynamic_keymap_get_combo(idx, &entry);
+#ifdef USE_LOCAL_COMBO
+                if (idx < local_combo_size) {
+                    for (uint8_t j = 0; j < ARRAY_SIZE(entry.input); j++) {
+                        if (local_key_combos[idx].keys[j] == COMBO_END) {
+                            break;
+                        }
+                        entry.input[j] = local_key_combos[idx].keys[j];
+                    }
+                    entry.output = local_key_combos[idx].keycode;
+                }
+#endif
                 memcpy(&msg[1], &entry, sizeof(entry));
                 break;
             }
@@ -587,6 +603,17 @@ static void reload_combo(void) {
 
         vial_combo_entry_t entry;
         if (dynamic_keymap_get_combo(i, &entry) == 0) {
+#ifdef USE_LOCAL_COMBO
+            if (i < local_combo_size) {
+                for (uint8_t j = 0; j < ARRAY_SIZE(entry.input); j++) {
+                    if (local_key_combos[i].keys[j] == COMBO_END) {
+                        break;
+                    }
+                    entry.input[j] = local_key_combos[i].keys[j];
+                }
+                entry.output = local_key_combos[i].keycode;
+            }
+#endif
             memcpy(seq, entry.input, sizeof(entry.input));
             key_combos[i].keycode = entry.output;
         }
