@@ -45,14 +45,14 @@ const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
 );
 
 static bool my_is_keyboard_post_init_user_called = false;
-static bool my_is_key_pressed_to_skip_rec_rgn = false;
+static bool my_is_key_pressed_to_skip_rec_rgb = false;
 
 static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
     if (!my_is_keyboard_post_init_user_called) {
         return;
     }
 
-    my_is_key_pressed_to_skip_rec_rgn = false;
+    my_is_key_pressed_to_skip_rec_rgb = false;
 
     if (is_caps_word_on()) {
         return;
@@ -207,7 +207,7 @@ layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
     // store rgblight automatically if it is changed on vial.
     if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
         my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() && !my_is_key_pressed_to_skip_rec_rgn) {
+    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() && !my_is_key_pressed_to_skip_rec_rgb) {
         my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
     }
 
@@ -238,7 +238,7 @@ layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
     // store rgblight automatically if it is changed on vial.
     if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
         my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() &&!my_is_key_pressed_to_skip_rec_rgn) {
+    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() &&!my_is_key_pressed_to_skip_rec_rgb) {
         my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
     }
 
@@ -256,7 +256,7 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
                 MY_EECONFIG_update_retain_val_to_eeprom(!cur_flag);
                 if (MY_EECONFIG_get_current_layer_field(layer_state) != MY_FIELD_LAYER0) {
-                    my_is_key_pressed_to_skip_rec_rgn = true;
+                    my_is_key_pressed_to_skip_rec_rgb = true;
                 }
             }
             return false;
@@ -323,7 +323,7 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case UG_NEXT ... RGB_M_TW:
             if (rgblight_is_enabled()) {
                 my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-                my_is_key_pressed_to_skip_rec_rgn = true;
+                my_is_key_pressed_to_skip_rec_rgb = true;
             }
             break;
 
@@ -335,7 +335,7 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case USR_RGB_LAYER_VAL_DOWN:
             if (my_is_rgblight_per_layer_enabled(NULL)) {
                 my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
-                my_is_key_pressed_to_skip_rec_rgn = true;
+                my_is_key_pressed_to_skip_rec_rgb = true;
             }
             break;
 
