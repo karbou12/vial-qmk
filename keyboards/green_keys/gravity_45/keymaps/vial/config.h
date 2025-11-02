@@ -12,4 +12,15 @@
 #define RGBLIGHT_LAYERS_RETAIN_VAL
 #define RGBLIGHT_LAYER_BLINK
 
-#define EECONFIG_USER_DATA_SIZE 43 // 4 byte * 9 layers + 1 byte * 2 flags  + 1 byte * 5= 43
+#define EECONFIG_USER_DATA_SIZE 43 // keep the largest size ever.
+
+#define G45_FW_VER_MAJOR 1
+#define G45_FW_VER_MINOR 0
+#define G45_FW_VER_PATCH 0
+
+#define G45_FW_VER_MAJOR_OFFSET 8
+#define G45_FW_VER_MINOR_OFFSET 4
+
+#define G45_CONCAT_VERSION(M, m, p) ((M << G45_FW_VER_MAJOR_OFFSET) | (m << G45_FW_VER_MINOR_OFFSET) | p)
+#define FVS(x) G45_FW_VER_ ## x
+#define EECONFIG_USER_DATA_VERSION G45_CONCAT_VERSION(FVS(MAJOR), FVS(MINOR), FVS(PATCH))

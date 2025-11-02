@@ -16,7 +16,7 @@
       {"name": "USR_RGB_LAYER_SAT_DOWN", "title": "Decrease saturation of the current layer, increase it when Shift is held", "shortName": "Layer\nSat -"},
       {"name": "USR_RGB_LAYER_VAL_UP", "title": "Increase value (brightness) of the current layer, decrease it when Shift is held", "shortName": "Layer\nBright +"},
       {"name": "USR_RGB_LAYER_VAL_DOWN", "title": "Decrease value (brightness) of the current layer, increase it when Shift is held", "shortName": "Layer\nBright -"},
-      {"name": "USR_RGB_LAYER_SAVE", "title": "Save the current RGB as the current layer's RGB", "shortName": "Save\nLayer\nRGB"},
+      {"name": "USR_RGB_AUTO_SAVE_TOG", "title": "Toggle to save automatically the current RGB as the current layer's RGB except layer 0", "shortName": "Auto\nSave\nRGB"},
       {"name": "USR_OS_DEFAULT_LAYER", "title": "Set the current layer as the default layer of the current OS", "shortName": "Set\nOSDF"}
     ],
     "layouts": {

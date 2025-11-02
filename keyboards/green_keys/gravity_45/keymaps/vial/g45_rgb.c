@@ -45,8 +45,15 @@ const rgblight_segment_t * const PROGMEM g45_rgb_layers[] = RGBLIGHT_LAYERS_LIST
 );
 
 static bool g45_is_keyboard_post_init_user_called = false;
+static bool g45_is_key_pressed_to_skip_rec_rgn = false;
 
 static void g45_set_rgblight_on_layer_of(const g45_user_config_field_e field) {
+    if (!g45_is_keyboard_post_init_user_called) {
+        return;
+    }
+
+    g45_is_key_pressed_to_skip_rec_rgn = false;
+
     if (is_caps_word_on()) {
         return;
     }
@@ -85,9 +92,11 @@ static void g45_record_rgblight_on_layer_of(const g45_user_config_field_e field)
         return;
     }
 
-    if ((cur_hsvm.hsv.h == p->hsv.h) && (cur_hsvm.hsv.s == p->hsv.s) &&
-        (cur_hsvm.hsv.v == p->hsv.v) && (cur_hsvm.mode == p->mode)) {
-        return;
+    if ((cur_hsvm.hsv.h == p->hsv.h) && (cur_hsvm.hsv.s == p->hsv.s) && (cur_hsvm.mode == p->mode)) {
+        if (((field == G45_FIELD_LAYER0) && (cur_hsvm.hsv.v == p->hsv.v)) ||
+            ((field != G45_FIELD_LAYER0) && ((cur_hsvm.hsv.v == p->hsv.v) || G45_EECONFIG_get_retain_val_from_mem()))) {
+            return;
+        }
     }
 
     G45_EECONFIG_update_hsvm_layer_to_eeprom(field, &cur_hsvm);
@@ -120,6 +129,14 @@ static void g45_update_val_noeeprom(const bool is_increase) {
     }
 }
 
+static bool g45_is_rgblight_per_layer_enabled(keyrecord_t *record) {
+    if (record) {
+        return (record->event.pressed && rgblight_is_enabled() && G45_EECONFIG_get_rgb_per_layer_from_mem());
+    } else {
+        return (rgblight_is_enabled() && G45_EECONFIG_get_rgb_per_layer_from_mem());
+    }
+}
+
 void G45_RGB_eeconfig_init_mem(void) {
     g45_hsvm_t* p = g45_user_config.hsvm_layer;
     for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++) {
@@ -130,25 +147,53 @@ void G45_RGB_eeconfig_init_mem(void) {
         p->mode = RGBLIGHT_MODE_STATIC_LIGHT;
     }
 
-    g45_user_config.is_rgb_per_layer = true;
-    g45_user_config.to_retain_val = true;
+    g45_user_config.flag_raw = 0u;
+    g45_user_config.flags.is_rgb_per_layer = true;
+    g45_user_config.flags.is_auto_save_rgb = true;
+    g45_user_config.flags.to_retain_val = true;
 }
 
-void G45_RGB_eeconfig_init_user_datablock(void) {
-    rgblight_enable_noeeprom();
-    g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+void G45_RGB_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t prev_ver) {
+    if (!bk || prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V1) {
+        return;
+    }
+
+    G45_RGB_eeconfig_init_mem();
+    g45_hsvm_t* p = g45_user_config.hsvm_layer;
+
+    const g45_hsvm_t* bk_p = (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.hsvm_layer
+                                                                          : bk->v2.hsvm_layer;
+
+    for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++, bk_p++) {
+        p->hsv.h = bk_p->hsv.h;
+        p->hsv.s = bk_p->hsv.s;
+        p->hsv.v = bk_p->hsv.v;
+        p->mode = bk_p->mode;
+    }
+
+    if (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) {
+        g45_user_config.flags.is_rgb_per_layer = bk->v1.is_rgb_per_layer;
+        g45_user_config.flags.to_retain_val = bk->v1.to_retain_val;
+    } else {
+        g45_user_config.flags.is_rgb_per_layer = bk->v2.flags.is_rgb_per_layer;
+        g45_user_config.flags.is_auto_save_rgb = bk->v2.flags.is_auto_save_rgb;
+        g45_user_config.flags.to_retain_val = bk->v2.flags.to_retain_val;
+    }
 }
 
 void G45_RGB_keyboard_post_init_user(void) {
+    g45_is_keyboard_post_init_user_called = true;
     rgblight_layers = g45_blink_layers;
 
     rgblight_enable_noeeprom();
     g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
-
-    g45_is_keyboard_post_init_user_called = true;
 };
 
 layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state) {
+    if (!rgblight_is_enabled()) {
+        return state;
+    }
+
     if (!G45_EECONFIG_get_rgb_per_layer_from_mem()) {
         g45_set_rgblight_on_layer_of(G45_FIELD_LAYER0);
         return state;
@@ -159,11 +204,11 @@ layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state) {
     uprintf("%s def:%u, layer_state:%u, state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state), get_highest_layer(state));
 #endif
 
-    // store rgblight of layer 0 automatically if it is changed on vial.
-    if (g45_is_keyboard_post_init_user_called) {
-        if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
-            g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
-        }
+    // store rgblight automatically if it is changed on vial.
+    if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
+        g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
+    } else if (G45_EECONFIG_get_auto_save_rgb_from_mem() && !g45_is_key_pressed_to_skip_rec_rgn) {
+        g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
     }
 
     g45_set_rgblight_on_layer_of(get_highest_layer(state));
@@ -172,6 +217,10 @@ layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state) {
 }
 
 layer_state_t G45_RGB_layer_state_set_user(layer_state_t state) {
+    if (!rgblight_is_enabled()) {
+        return state;
+    }
+
     if (is_caps_word_on()) {
         return state;
     }
@@ -186,11 +235,11 @@ layer_state_t G45_RGB_layer_state_set_user(layer_state_t state) {
     uprintf("%s def:%u, layer_state:%u, state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state), get_highest_layer(state));
 #endif
 
-    // store rgblight of layer 0 automatically if it is changed on vial.
-    if (g45_is_keyboard_post_init_user_called) {
-        if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
-            g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
-        }
+    // store rgblight automatically if it is changed on vial.
+    if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
+        g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
+    } else if (G45_EECONFIG_get_auto_save_rgb_from_mem() &&!g45_is_key_pressed_to_skip_rec_rgn) {
+        g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
     }
 
     g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(state));
@@ -202,15 +251,18 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mod_state = get_mods();
     switch (keycode) {
         case USR_RGB_RETAIN_VAL_TOG:
-            if (record->event.pressed) {
+            if (rgblight_is_enabled() && record->event.pressed) {
                 const bool cur_flag = G45_EECONFIG_get_retain_val_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
                 G45_EECONFIG_update_retain_val_to_eeprom(!cur_flag);
+                if (G45_EECONFIG_get_current_layer_field(layer_state) != G45_FIELD_LAYER0) {
+                    g45_is_key_pressed_to_skip_rec_rgn = true;
+                }
             }
             return false;
 
         case USR_RGB_LAYER_TOG:
-            if (record->event.pressed) {
+            if (rgblight_is_enabled() && record->event.pressed) {
                 const bool cur_flag = G45_EECONFIG_get_rgb_per_layer_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
                 G45_EECONFIG_update_rgb_per_layer_to_eeprom(!cur_flag);
@@ -218,45 +270,46 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
 
         case USR_RGB_LAYER_HUE_UP:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 g45_update_hue_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
             return true;
 
         case USR_RGB_LAYER_HUE_DOWN:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 g45_update_hue_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
             return true;
 
         case USR_RGB_LAYER_SAT_UP:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 g45_update_sat_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
             return true;
 
         case USR_RGB_LAYER_SAT_DOWN:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 g45_update_sat_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
             return true;
 
         case USR_RGB_LAYER_VAL_UP:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 g45_update_val_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
             return true;
 
         case USR_RGB_LAYER_VAL_DOWN:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 g45_update_val_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
             return true;
 
-        case USR_RGB_LAYER_SAVE:
-            if (record->event.pressed && G45_EECONFIG_get_rgb_per_layer_from_mem()) {
-                rgblight_blink_layer_repeat(G45_BLINK_ON, 200, 3);
-                g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+        case USR_RGB_AUTO_SAVE_TOG:
+            if (g45_is_rgblight_per_layer_enabled(record)) {
+                const bool cur_flag = G45_EECONFIG_get_auto_save_rgb_from_mem();
+                rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
+                G45_EECONFIG_update_auto_save_rgb_to_eeprom(!cur_flag);
             }
             return false;
 
@@ -266,26 +319,12 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void G45_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (!g45_is_keyboard_post_init_user_called) {
-#ifdef CONSOLE_ENABLE
-        uprintf("============================================================\n");
-        uprintf("%s, def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
-#endif
-        G45_EECONFIG_read_all_data_from_user_datablock();
-
-        g45_is_keyboard_post_init_user_called = true;
-    }
-
     switch (keycode) {
-        case UG_NEXT:
-        case UG_PREV:
-        case UG_HUED:
-        case UG_HUEU:
-        case UG_SATD:
-        case UG_SATU:
-        case UG_VALD:
-        case UG_VALU:
-            g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
+        case UG_NEXT ... RGB_M_TW:
+            if (rgblight_is_enabled()) {
+                g45_record_rgblight_on_layer_of(G45_FIELD_LAYER0);
+                g45_is_key_pressed_to_skip_rec_rgn = true;
+            }
             break;
 
         case USR_RGB_LAYER_HUE_UP:
@@ -294,7 +333,10 @@ void G45_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case USR_RGB_LAYER_SAT_DOWN:
         case USR_RGB_LAYER_VAL_UP:
         case USR_RGB_LAYER_VAL_DOWN:
-            g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+            if (g45_is_rgblight_per_layer_enabled(NULL)) {
+                g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+                g45_is_key_pressed_to_skip_rec_rgn = true;
+            }
             break;
 
         default:
