@@ -81,7 +81,10 @@ extern my_user_config_field_e MY_EECONFIG_get_os_default_layer_from_mem(void);
 extern void MY_EECONFIG_update_os_default_layer_to_eeprom(const my_user_config_field_e field);
 
 // override func
+extern void MY_EECONFIG_eeconfig_init_user_datablock(void);
+extern void MY_EECONFIG_keyboard_post_init_user(void);
 extern bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record);
+extern bool MY_EECONFIG_migrate_user_datablock(void);
 
 #ifdef CONSOLE_ENABLE
 extern void my_dump_eeconfig(const char* const func);

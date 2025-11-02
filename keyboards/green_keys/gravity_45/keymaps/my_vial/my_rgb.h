@@ -11,3 +11,10 @@ typedef enum {
 } my_blink_layer_e;
 
 extern void MY_RGB_eeconfig_migrate_mem(const my_user_config_u* bk, const uint32_t prev_ver);
+extern void MY_RGB_eeconfig_init_mem(void);
+extern void MY_RGB_keyboard_post_init_user(void);
+extern layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state);
+extern layer_state_t MY_RGB_layer_state_set_user(layer_state_t state);
+extern bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record);
+extern void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record);
+extern void MY_RGB_caps_word_set_user(bool active);
