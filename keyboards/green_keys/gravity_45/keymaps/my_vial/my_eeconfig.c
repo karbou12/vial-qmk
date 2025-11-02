@@ -1,3 +1,6 @@
+// Copyright 2025 Tano Karbou (github: karbou12 / X: @karbou_12)
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #include "my_eeconfig.h"
 #include "my_keycodes.h"
 #include "my_rgb.h"
@@ -120,7 +123,7 @@ bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 eeconfig_init_user_datablock();
                 MY_EECONFIG_update_all_data_to_user_datablock();
 
-                set_single_persistent_default_layer(MY_FIELD_LAYER0);
+                set_single_default_layer(MY_FIELD_LAYER0);
             }
             return false;
         default:
