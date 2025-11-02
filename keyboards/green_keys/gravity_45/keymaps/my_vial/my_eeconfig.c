@@ -26,7 +26,7 @@ void my_dump_eeconfig(const char* const func) {
     uprintf("%s DUMP EEPROM USER DATA. ver:%04x (%u.%u.%u), size:%u, defined size:%u\n",
             func, EECONFIG_USER_DATA_VERSION, version[2], version[1], version[0],
             sizeof(my_user_config), EECONFIG_USER_DATA_SIZE);
-    for (int i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
         uprintf("id:%u, hue:%u, sat:%u, val:%u, mode:%u\n", i, p->hsv.h, p->hsv.s, p->hsv.v, p->mode);
     }
     uprintf("is_rgb_per_layer:%s\n", my_user_config.flags.is_rgb_per_layer ? "true" : "false");
@@ -34,7 +34,7 @@ void my_dump_eeconfig(const char* const func) {
     uprintf("to_retain_val:%s\n", my_user_config.flags.to_retain_val ? "true" : "false");
 
     my_user_config_field_e* p_os = my_user_config.os_default_layer;
-    for (int i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p_os++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p_os++) {
         uprintf("id:%u, default layer:%u\n", i, *p_os);
     }
 }
