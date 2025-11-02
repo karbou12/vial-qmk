@@ -26,7 +26,11 @@ bool MY_OS_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MY_OS_DEFAULT_LAYER:
             if (record->event.pressed) {
                 rgblight_blink_layer_repeat(MY_BLINK_DF, 200, 3);
-                MY_EECONFIG_update_os_default_layer_to_eeprom(MY_EECONFIG_get_current_layer_field(layer_state));
+
+                const my_user_config_field_e cur_layer = MY_EECONFIG_get_current_layer_field(layer_state);
+                MY_EECONFIG_update_os_default_layer_to_eeprom(cur_layer);
+
+                set_single_persistent_default_layer(cur_layer);
             }
             return false;
         default:

@@ -218,37 +218,37 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_hue_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
-            return false;
+            return true;
 
         case MY_RGB_LAYER_HUE_DOWN:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_hue_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
-            return false;
+            return true;
 
         case MY_RGB_LAYER_SAT_UP:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_sat_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
-            return false;
+            return true;
 
         case MY_RGB_LAYER_SAT_DOWN:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_sat_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
-            return false;
+            return true;
 
         case MY_RGB_LAYER_VAL_UP:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_val_noeeprom(!(mod_state & MOD_MASK_SHIFT));
             }
-            return false;
+            return true;
 
         case MY_RGB_LAYER_VAL_DOWN:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
                 my_update_val_noeeprom(mod_state & MOD_MASK_SHIFT);
             }
-            return false;
+            return true;
 
         case MY_RGB_LAYER_SAVE:
             if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
@@ -292,6 +292,7 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MY_RGB_LAYER_VAL_UP:
         case MY_RGB_LAYER_VAL_DOWN:
             my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
+            break;
 
         default:
             break;
