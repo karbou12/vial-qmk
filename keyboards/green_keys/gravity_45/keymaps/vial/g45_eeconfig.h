@@ -81,7 +81,10 @@ extern g45_user_config_field_e G45_EECONFIG_get_os_default_layer_from_mem(void);
 extern void G45_EECONFIG_update_os_default_layer_to_eeprom(const g45_user_config_field_e field);
 
 // override func
+extern void G45_EECONFIG_eeconfig_init_user_datablock(void);
+extern void G45_EECONFIG_keyboard_post_init_user(void);
 extern bool G45_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record);
+extern bool G45_EECONFIG_migrate_user_datablock(void);
 
 #ifdef CONSOLE_ENABLE
 extern void g45_dump_eeconfig(const char* const func);
