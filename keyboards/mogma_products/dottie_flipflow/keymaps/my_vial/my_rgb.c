@@ -1,66 +1,321 @@
+#include "config.h"
 #ifdef RGBLIGHT_LAYERS
+#include "my_keycodes.h"
+#include "my_eeconfig.h"
+#include "my_rgb.h"
 
-static hsv_t my_hsv;
-static uint8_t my_mode = 0;
+// rgblight default color of each layer.
+static const rgblight_segment_t PROGMEM my_win_default_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
+static const rgblight_segment_t PROGMEM my_mac_default_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_BLUE});
+static const rgblight_segment_t PROGMEM my_win_raise_layer[] =   RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_PURPLE});
+static const rgblight_segment_t PROGMEM my_mac_raise_layer[] =   RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_PURPLE});
+static const rgblight_segment_t PROGMEM my_win_lower_layer[] =   RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_ORANGE});
+static const rgblight_segment_t PROGMEM my_mac_lower_layer[] =   RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_ORANGE});
+static const rgblight_segment_t PROGMEM my_win_adjust_layer[] =  RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_SPRINGGREEN});
+static const rgblight_segment_t PROGMEM my_mac_adjust_layer[] =  RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_SPRINGGREEN});
+static const rgblight_segment_t PROGMEM my_capsword_layer[] =    RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_RED});
+static const rgblight_segment_t PROGMEM my_layerOFF_layer[] =    RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_OFF});
 
-const rgblight_segment_t PROGMEM my_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
-const rgblight_segment_t PROGMEM my_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_PURPLE});
-const rgblight_segment_t PROGMEM my_layer2_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_ORANGE});
-const rgblight_segment_t PROGMEM my_layer3_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_SPRINGGREEN});
-const rgblight_segment_t PROGMEM my_capsword_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_RED});
-const rgblight_segment_t PROGMEM my_layerOFF_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_OFF});
+static const rgblight_segment_t PROGMEM my_reset_layer[] =       RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_WHITE});
+static const rgblight_segment_t PROGMEM my_turn_on_layer[] =     RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GOLD});
+static const rgblight_segment_t PROGMEM my_turn_off_layer[] =    RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_RED});
+static const rgblight_segment_t PROGMEM my_set_default_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GREEN});
 
-const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
-    my_layer0_layer,
-    my_layer1_layer,
-    my_layer2_layer,
-    my_layer3_layer,
+static const rgblight_segment_t * const PROGMEM my_blink_layers[] = RGBLIGHT_LAYERS_LIST(
+    my_reset_layer,
+    my_turn_on_layer,
+    my_turn_off_layer,
+    my_set_default_layer
+);
+
+static const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
+    my_win_default_layer,
+    my_mac_default_layer,
+    my_win_raise_layer,
+    my_mac_raise_layer,
+    my_win_lower_layer,
+    my_mac_lower_layer,
+    my_win_adjust_layer,
+    my_mac_adjust_layer,
     my_capsword_layer
 );
 
-static void record_current_rgblight(void) {
-    my_mode = rgblight_get_mode();
-    my_hsv.h = rgblight_get_hue();
-    my_hsv.s = rgblight_get_sat();
-    my_hsv.v = rgblight_get_val();
-}
+static bool my_is_keyboard_post_init_user_called = false;
 
-static void set_rgblight_on_default_layer(void) {
-    rgblight_sethsv_noeeprom(my_hsv.h, my_hsv.s, my_hsv.v);
-    rgblight_mode_noeeprom(my_mode);
-}
-
-void keyboard_post_init_user(void) {
-    rgblight_layers = my_rgb_layers;
-    record_current_rgblight();
-};
-
-layer_state_t default_layer_state_set_user(layer_state_t state) {
-    record_current_rgblight();
-    set_rgblight_on_default_layer();
-
-    return state;
-}
-
-layer_state_t layer_state_set_user(layer_state_t state) {
-    if (get_highest_layer(state) == 0) {
-        record_current_rgblight();
+static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
+    if (is_caps_word_on()) {
+        return;
     }
 
-    rgblight_set_layer_state(1, layer_state_cmp(state, 1));
-    rgblight_set_layer_state(2, layer_state_cmp(state, 2));
-    rgblight_set_layer_state(3, layer_state_cmp(state, 3));
+    const my_hsvm_t* p = MY_EECONFIG_get_hsvm_layer_from_mem(field);
+    if (!p) {
+        return;
+    }
+
+    uint8_t use_val = p->hsv.v;
+    if (MY_EECONFIG_get_use_same_val_from_mem() && (field != MY_FIELD_LAYER0)) {
+        const my_hsvm_t* p_layer0 = MY_EECONFIG_get_hsvm_layer_from_mem(MY_FIELD_LAYER0);
+        use_val = p_layer0->hsv.v;
+    }
+
+    MY_DUMP_EECONFIG();
+#ifdef CONSOLE_ENABLE
+    uprintf("%s, field:%u, hue:%u, sat:%u, val:%u\n", __FUNCTION__, field, p->hsv.h, p->hsv.s, use_val);
+#endif
+
+    rgblight_sethsv_noeeprom(p->hsv.h, p->hsv.s, use_val);
+    rgblight_mode_noeeprom(p->mode);
+}
+
+static void my_record_rgblight_on_layer_of(const my_user_config_field_e field) {
+    if (is_caps_word_on()) {
+        return;
+    }
+
+    MY_DUMP_EECONFIG();
+    my_hsvm_t cur_hsvm = {.hsv.h = rgblight_get_hue(), .hsv.s = rgblight_get_sat(),
+                          .hsv.v = rgblight_get_val(), .mode = rgblight_get_mode()};
+
+    const my_hsvm_t* p = MY_EECONFIG_get_hsvm_layer_from_mem(field);
+    if (!p) {
+        return;
+    }
+
+    if ((cur_hsvm.hsv.h == p->hsv.h) && (cur_hsvm.hsv.s == p->hsv.s) &&
+        (cur_hsvm.hsv.v == p->hsv.v) && (cur_hsvm.mode == p->mode)) {
+        return;
+    }
+
+    MY_EECONFIG_update_hsvm_layer_to_eeprom(field, &cur_hsvm);
+
+    MY_DUMP_EECONFIG();
+}
+
+// user button's func
+static void my_update_hue_noeeprom(const bool is_increase) {
+    if (is_increase) {
+        rgblight_increase_hue_noeeprom();
+    } else {
+        rgblight_decrease_hue_noeeprom();
+    }
+}
+
+static void my_update_sat_noeeprom(const bool is_increase) {
+    if (is_increase) {
+        rgblight_increase_sat_noeeprom();
+    } else {
+        rgblight_decrease_sat_noeeprom();
+    }
+}
+
+static void my_update_val_noeeprom(const bool is_increase) {
+    if (is_increase) {
+        rgblight_increase_val_noeeprom();
+    } else {
+        rgblight_decrease_val_noeeprom();
+    }
+}
+
+void MY_RGB_eeconfig_init_mem(void) {
+    my_hsvm_t* p = my_user_config.hsvm_layer;
+    for (int i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
+        const rgblight_segment_t* const cur_seg = my_rgb_layers[i];
+        p->hsv.h = cur_seg->hue;
+        p->hsv.s = cur_seg->sat;
+        p->hsv.v = cur_seg->val;
+        p->mode = RGBLIGHT_MODE_STATIC_LIGHT;
+    }
+
+    my_user_config.is_rgb_per_layer = true;
+    my_user_config.to_use_same_val = true;
+}
+
+void MY_RGB_eeconfig_init_user_datablock(void) {
+    rgblight_enable_noeeprom();
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
+}
+
+void MY_RGB_keyboard_post_init_user(void) {
+    rgblight_layers = my_blink_layers;
+
+    rgblight_enable_noeeprom();
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
+
+    my_is_keyboard_post_init_user_called = true;
+};
+
+layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
+    if (!MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+        my_set_rgblight_on_layer_of(MY_FIELD_LAYER0);
+        return state;
+    }
+
+#ifdef CONSOLE_ENABLE
+    uprintf("============================================================\n");
+    uprintf("%s def:%u, layer_state:%u, state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state), get_highest_layer(state));
+#endif
+
+    // store rgblight of layer 0 automatically if it is changed on vial.
+    if (my_is_keyboard_post_init_user_called) {
+        if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
+            my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
+        }
+    }
+
+    my_set_rgblight_on_layer_of(get_highest_layer(state));
+
+    return state;
+}
+
+layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
+    if (is_caps_word_on()) {
+        return state;
+    }
+
+    if (!MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+        my_set_rgblight_on_layer_of(MY_FIELD_LAYER0);
+        return state;
+    }
+
+#ifdef CONSOLE_ENABLE
+    uprintf("============================================================\n");
+    uprintf("%s def:%u, layer_state:%u, state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state), get_highest_layer(state));
+#endif
+
+    // store rgblight of layer 0 automatically if it is changed on vial.
+    if (my_is_keyboard_post_init_user_called) {
+        if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
+            my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
+        }
+    }
+
+    my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(state));
 
     return state;
 };
 
-void caps_word_set_user(bool active) {
+bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    const uint8_t mod_state = get_mods();
+    switch (keycode) {
+        case MY_RGB_LAYER_SAME_VAL:
+            if (record->event.pressed) {
+                const bool cur_flag = MY_EECONFIG_get_use_same_val_from_mem();
+                rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
+                MY_EECONFIG_update_use_same_val_to_eeprom(!cur_flag);
+            }
+            return false;
+
+        case MY_RGB_LAYER_TOG:
+            if (record->event.pressed) {
+                const bool cur_flag = MY_EECONFIG_get_rgb_per_layer_from_mem();
+                rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
+                MY_EECONFIG_update_rgb_per_layer_to_eeprom(!cur_flag);
+            }
+            return false;
+
+        case MY_RGB_LAYER_HUE_UP:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                my_update_hue_noeeprom(!(mod_state & MOD_MASK_SHIFT));
+            }
+            return false;
+
+        case MY_RGB_LAYER_HUE_DOWN:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                my_update_hue_noeeprom(mod_state & MOD_MASK_SHIFT);
+            }
+            return false;
+
+        case MY_RGB_LAYER_SAT_UP:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                my_update_sat_noeeprom(!(mod_state & MOD_MASK_SHIFT));
+            }
+            return false;
+
+        case MY_RGB_LAYER_SAT_DOWN:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                my_update_sat_noeeprom(mod_state & MOD_MASK_SHIFT);
+            }
+            return false;
+
+        case MY_RGB_LAYER_VAL_UP:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                my_update_val_noeeprom(!(mod_state & MOD_MASK_SHIFT));
+            }
+            return false;
+
+        case MY_RGB_LAYER_VAL_DOWN:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                my_update_val_noeeprom(mod_state & MOD_MASK_SHIFT);
+            }
+            return false;
+
+        case MY_RGB_LAYER_SAVE:
+            if (record->event.pressed && MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+                rgblight_blink_layer_repeat(MY_BLINK_ON, 200, 3);
+                my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
+            }
+            return false;
+
+        default:
+            return true;
+    }
+}
+
+void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!my_is_keyboard_post_init_user_called) {
+#ifdef CONSOLE_ENABLE
+        uprintf("============================================================\n");
+        uprintf("%s, def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
+#endif
+        MY_EECONFIG_read_all_data_from_user_datablock();
+
+        my_is_keyboard_post_init_user_called = true;
+    }
+
+    switch (keycode) {
+        case UG_NEXT:
+        case UG_PREV:
+        case UG_HUED:
+        case UG_HUEU:
+        case UG_SATD:
+        case UG_SATU:
+        case UG_VALD:
+        case UG_VALU:
+            my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
+            break;
+
+        case MY_RGB_LAYER_HUE_UP:
+        case MY_RGB_LAYER_HUE_DOWN:
+        case MY_RGB_LAYER_SAT_UP:
+        case MY_RGB_LAYER_SAT_DOWN:
+        case MY_RGB_LAYER_VAL_UP:
+        case MY_RGB_LAYER_VAL_DOWN:
+            my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
+
+        default:
+            break;
+    }
+}
+
+void MY_RGB_caps_word_set_user(bool active) {
+    if (!MY_EECONFIG_get_rgb_per_layer_from_mem()) {
+        return;
+    }
+
     if (active) {
         const rgblight_segment_t* const cur_seg = my_capsword_layer;
-        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, my_hsv.v);
-        rgblight_mode_noeeprom(0);
+#ifdef CONSOLE_ENABLE
+        uprintf("============================================================\n");
+        uprintf("%s, active def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
+#endif
+
+        rgblight_sethsv_noeeprom(cur_seg->hue, cur_seg->sat, MY_EECONFIG_get_hsvm_layer_from_mem(MY_FIELD_LAYER0)->hsv.v);
+        rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
     } else {
-        set_rgblight_on_default_layer();
+#ifdef CONSOLE_ENABLE
+        uprintf("%s, inactive def:%u, layer_state:%u\n", __FUNCTION__, get_highest_layer(default_layer_state), get_highest_layer(layer_state));
+#endif
+        my_set_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
     }
 }
 
