@@ -10,7 +10,7 @@
 g45_user_config_t g45_user_config = {0};
 
 #ifdef CONSOLE_ENABLE
-void parse_version(const uint32_t version, uint16_t* parsed_version) {
+static void parse_version(const uint32_t version, uint16_t* parsed_version) {
     *parsed_version = version & 0xF;
     parsed_version++;
     *parsed_version = (version >> G45_FW_VER_MINOR_OFFSET) & 0xF;
@@ -40,7 +40,7 @@ void g45_dump_eeconfig(const char* const func) {
 }
 #endif
 
-uint32_t g45_get_offset(const g45_user_config_field_e field) {
+static uint32_t g45_get_offset(const g45_user_config_field_e field) {
     switch (field) {
         case G45_FIELD_LAYER0 ... G45_FIELD_LAYER8:
             return sizeof(g45_hsvm_t) * field;
