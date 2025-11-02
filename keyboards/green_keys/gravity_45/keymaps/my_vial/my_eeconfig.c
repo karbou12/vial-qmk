@@ -16,7 +16,7 @@ void my_dump_eeconfig(const char* const func) {
         uprintf("id:%u, hue:%u, sat:%u, val:%u, mode:%u\n", i, p->hsv.h, p->hsv.s, p->hsv.v, p->mode);
     }
     uprintf("is_rgb_per_layer:%s\n", my_user_config.is_rgb_per_layer ? "true" : "false");
-    uprintf("to_use_same_val:%s\n", my_user_config.to_use_same_val ? "true" : "false");
+    uprintf("to_retain_val:%s\n", my_user_config.to_retain_val ? "true" : "false");
 
     my_user_config_field_e* p_os = my_user_config.os_default_layer;
     for (int i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p_os++) {
@@ -29,7 +29,7 @@ uint32_t my_get_offset(const my_user_config_field_e field) {
     switch (field) {
         case MY_FIELD_LAYER0 ... MY_FIELD_LAYER8:
             return sizeof(my_hsvm_t) * field;
-        case MY_FIELD_LAYER_TOGGLE ... MY_FIELD_SAME_VAL:
+        case MY_FIELD_LAYER_TOGGLE ... MY_FIELD_RETAIN_VAL_TOGGLE:
             return sizeof(my_hsvm_t) * ARRAY_SIZE(my_user_config.hsvm_layer) +
                    sizeof(bool) * (field - MY_FIELD_LAYER8 - 1);
         case MY_FIELD_OS_UNSURE ... MY_FIELD_OS_IOS:
@@ -77,13 +77,13 @@ void MY_EECONFIG_update_rgb_per_layer_to_eeprom(const bool is_rgb_per_layer) {
     eeconfig_update_user_datablock(&is_rgb_per_layer, my_get_offset(MY_FIELD_LAYER_TOGGLE), sizeof(is_rgb_per_layer));
 }
 
-bool MY_EECONFIG_get_use_same_val_from_mem(void) {
-    return my_user_config.to_use_same_val;
+bool MY_EECONFIG_get_retain_val_from_mem(void) {
+    return my_user_config.to_retain_val;
 }
 
-void MY_EECONFIG_update_use_same_val_to_eeprom(const bool to_use_same_val) {
-    my_user_config.to_use_same_val = to_use_same_val;
-    eeconfig_update_user_datablock(&to_use_same_val, my_get_offset(MY_FIELD_SAME_VAL), sizeof(to_use_same_val));
+void MY_EECONFIG_update_retain_val_to_eeprom(const bool to_retain_val) {
+    my_user_config.to_retain_val = to_retain_val;
+    eeconfig_update_user_datablock(&to_retain_val, my_get_offset(MY_FIELD_RETAIN_VAL_TOGGLE), sizeof(to_retain_val));
 }
 
 my_user_config_field_e MY_EECONFIG_get_os_default_layer_from_mem() {
@@ -117,7 +117,7 @@ void MY_EECONFIG_keyboard_post_init_user(void) {
 
 bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case MY_RESET:
+        case USR_RESET:
             if (record->event.pressed) {
                 rgblight_blink_layer_repeat(MY_BLINK_RESET, 300, 3);
                 eeconfig_init_user_datablock();
