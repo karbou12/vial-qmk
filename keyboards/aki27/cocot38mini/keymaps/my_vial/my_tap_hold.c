@@ -16,3 +16,11 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
 }
 
 #endif
+
+char chordal_hold_handedness(keypos_t key) {
+    if (key.row == 3 && key.col == 4) { // center key
+        return '*';
+    }
+
+    return (key.col < MATRIX_COLS / 2) ? 'L' : 'R';
+}
