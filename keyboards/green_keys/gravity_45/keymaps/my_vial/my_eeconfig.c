@@ -10,7 +10,7 @@
 my_user_config_t my_user_config = {0};
 
 #ifdef CONSOLE_ENABLE
-void parse_version(const uint32_t version, uint16_t* parsed_version) {
+static void parse_version(const uint32_t version, uint16_t* parsed_version) {
     *parsed_version = version & 0xF;
     parsed_version++;
     *parsed_version = (version >> MY_FW_VER_MINOR_OFFSET) & 0xF;
@@ -40,7 +40,7 @@ void my_dump_eeconfig(const char* const func) {
 }
 #endif
 
-uint32_t my_get_offset(const my_user_config_field_e field) {
+static uint32_t my_get_offset(const my_user_config_field_e field) {
     switch (field) {
         case MY_FIELD_LAYER0 ... MY_FIELD_LAYER8:
             return sizeof(my_hsvm_t) * field;
