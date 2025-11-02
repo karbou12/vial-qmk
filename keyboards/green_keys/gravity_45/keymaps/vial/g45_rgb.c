@@ -139,7 +139,7 @@ static bool g45_is_rgblight_per_layer_enabled(keyrecord_t *record) {
 
 void G45_RGB_eeconfig_init_mem(void) {
     g45_hsvm_t* p = g45_user_config.hsvm_layer;
-    for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++) {
         const rgblight_segment_t* const cur_seg = g45_rgb_layers[i];
         p->hsv.h = cur_seg->hue;
         p->hsv.s = cur_seg->sat;
@@ -164,7 +164,7 @@ void G45_RGB_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t pr
     const g45_hsvm_t* bk_p = (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.hsvm_layer
                                                                           : bk->v2.hsvm_layer;
 
-    for (int i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++, bk_p++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(g45_user_config.hsvm_layer); i++, p++, bk_p++) {
         p->hsv.h = bk_p->hsv.h;
         p->hsv.s = bk_p->hsv.s;
         p->hsv.v = bk_p->hsv.v;

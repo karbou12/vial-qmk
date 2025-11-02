@@ -5,8 +5,8 @@
 #include "g45_rgb.h"
 
 void G45_OS_eeconfig_init_mem(void) {
-    uint8_t* p = g45_user_config.os_default_layer;
-    for (int i = 0; i < ARRAY_SIZE(g45_user_config.os_default_layer); i++, p++) {
+    g45_user_config_field_e* p = g45_user_config.os_default_layer;
+    for (uint8_t i = 0; i < ARRAY_SIZE(g45_user_config.os_default_layer); i++, p++) {
         *p = 0;
     }
 }
@@ -18,10 +18,10 @@ void G45_OS_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t pre
 
     G45_OS_eeconfig_init_mem();
 
-    uint8_t* p = g45_user_config.os_default_layer;
-    const uint8_t* bk_p = (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.os_default_layer
-                                                                        : bk->v2.os_default_layer;
-    for (int i = 0; i < ARRAY_SIZE(g45_user_config.os_default_layer); i++, p++, bk_p++) {
+    g45_user_config_field_e* p = g45_user_config.os_default_layer;
+    const g45_user_config_field_e* bk_p = (prev_ver < G45_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.os_default_layer
+                                                                                       : bk->v2.os_default_layer;
+    for (uint8_t i = 0; i < ARRAY_SIZE(g45_user_config.os_default_layer); i++, p++, bk_p++) {
         *p = *bk_p;
     }
 }
