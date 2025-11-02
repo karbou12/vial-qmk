@@ -60,14 +60,6 @@ my_user_config_field_e MY_EECONFIG_get_current_layer_field(const layer_state_t s
     return (layer == MY_FIELD_LAYER0) ? get_highest_layer(default_layer_state) : layer;
 }
 
-void MY_EECONFIG_read_all_data_from_user_datablock(void) {
-    eeconfig_read_user_datablock(&my_user_config, 0, sizeof(my_user_config));
-}
-
-void MY_EECONFIG_update_all_data_to_user_datablock(void) {
-    eeconfig_update_user_datablock(&my_user_config, 0, sizeof(my_user_config));
-}
-
 const my_hsvm_t* MY_EECONFIG_get_hsvm_layer_from_mem(const my_user_config_field_e field) {
     if (sizeof(my_user_config.hsvm_layer) <= field) {
         return NULL;
@@ -132,11 +124,11 @@ void MY_EECONFIG_update_os_default_layer_to_eeprom(const my_user_config_field_e 
 }
 
 void MY_EECONFIG_eeconfig_init_user_datablock(void) {
-    MY_EECONFIG_update_all_data_to_user_datablock();
+    eeconfig_update_user_datablock(&my_user_config, 0, sizeof(my_user_config));
 }
 
 void MY_EECONFIG_keyboard_post_init_user(void) {
-    MY_EECONFIG_read_all_data_from_user_datablock();
+    eeconfig_read_user_datablock(&my_user_config, 0, sizeof(my_user_config));
 }
 
 bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {

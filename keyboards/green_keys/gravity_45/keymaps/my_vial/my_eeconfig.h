@@ -65,9 +65,6 @@ extern my_user_config_t my_user_confg;
 
 extern my_user_config_field_e MY_EECONFIG_get_current_layer_field(const layer_state_t state);
 
-extern void MY_EECONFIG_read_all_data_from_user_datablock(void);
-extern void MY_EECONFIG_update_all_data_to_user_datablock(void);
-
 extern const my_hsvm_t* MY_EECONFIG_get_hsvm_layer_from_mem(const my_user_config_field_e field);
 extern void MY_EECONFIG_update_hsvm_layer_to_eeprom(const my_user_config_field_e field, const my_hsvm_t* hsvm_layer);
 
