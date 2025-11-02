@@ -44,6 +44,11 @@ _Static_assert(VIAL_UNLOCK_NUM_KEYS < 15, "Max 15 unlock keys");
 _Static_assert(sizeof(vial_unlock_combo_rows) == sizeof(vial_unlock_combo_cols), "The number of unlock cols and rows should be the same");
 #endif
 
+#ifdef USE_LOCAL_KEY_OVERRIDES
+extern key_override_t *key_overrides[];
+extern uint16_t key_overrides_raw_size;
+#endif
+
 #include "qmk_settings.h"
 
 #ifdef VIAL_TAP_DANCE_ENABLE
@@ -288,6 +293,20 @@ void vial_handle_cmd(uint8_t *msg, uint8_t length) {
                 uint8_t idx = msg[3];
                 vial_key_override_entry_t entry = { 0 };
                 msg[0] = dynamic_keymap_get_key_override(idx, &entry);
+
+#ifdef USE_LOCAL_KEY_OVERRIDES
+                if (idx < key_overrides_raw_size) {
+                    entry.trigger = key_overrides[idx]->trigger;
+                    entry.trigger_mods = key_overrides[idx]->trigger_mods;
+                    entry.layers = key_overrides[idx]->layers;
+                    entry.negative_mod_mask = key_overrides[idx]->negative_mod_mask;
+                    entry.suppressed_mods = key_overrides[idx]->suppressed_mods;
+                    entry.replacement = key_overrides[idx]->replacement;
+                    entry.options = key_overrides[idx]->options;
+                    entry.options |= vial_ko_enabled;
+                }
+#endif
+
                 memcpy(&msg[1], &entry, sizeof(entry));
                 break;
             }
@@ -614,6 +633,19 @@ static int vial_get_key_override(uint8_t index, key_override_t *out) {
     int ret;
     if ((ret = dynamic_keymap_get_key_override(index, &entry)) != 0)
         return ret;
+
+#ifdef USE_LOCAL_KEY_OVERRIDES
+    if (index < key_overrides_raw_size) {
+        entry.trigger = key_overrides[index]->trigger;
+        entry.trigger_mods = key_overrides[index]->trigger_mods;
+        entry.layers = key_overrides[index]->layers;
+        entry.negative_mod_mask = key_overrides[index]->negative_mod_mask;
+        entry.suppressed_mods = key_overrides[index]->suppressed_mods;
+        entry.replacement = key_overrides[index]->replacement;
+        entry.options = key_overrides[index]->options;
+        entry.options |= vial_ko_enabled;
+    }
+#endif
 
     memset(out, 0, sizeof(*out));
     out->trigger = entry.trigger;
