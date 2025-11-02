@@ -79,6 +79,10 @@ static void g45_set_rgblight_on_layer_of(const g45_user_config_field_e field) {
 }
 
 static void g45_record_rgblight_on_layer_of(const g45_user_config_field_e field) {
+    if (!g45_is_keyboard_post_init_user_called) {
+        return;
+    }
+
     if (is_caps_word_on()) {
         return;
     }
