@@ -7,6 +7,20 @@
       "rows": 4,
       "cols": 12
     },
+    "customKeycodes": [
+      {"name": "MY_RESET", "title": "Reset settings for RGB layer", "shortName": "MY_RST"},
+      {"name": "MY_RGB_LAYER_TOG", "title": "Toggle RGB per layer", "shortName": "LTOG"},
+      {"name": "MY_RGB_LAYER_SAME_VAL", "title": "Use Same Value RGB with layer 0", "shortName": "LSMVL"},
+      {"name": "MY_RGB_LAYER_HUE_UP", "title": "Increase Hue RGB of current layer", "shortName": "LHUEU"},
+      {"name": "MY_RGB_LAYER_HUE_DOWN", "title": "Decrease Hue RGB of current layer", "shortName": "LHUED"},
+      {"name": "MY_RGB_LAYER_SAT_UP", "title": "Increase Saturation RGB of current layer", "shortName": "LSATU"},
+      {"name": "MY_RGB_LAYER_SAT_DOWN", "title": "Decrease Saturation RGB of current layer", "shortName": "LSATD"},
+      {"name": "MY_RGB_LAYER_VAL_UP", "title": "Increase Value RGB of current layer", "shortName": "LVALU"},
+      {"name": "MY_RGB_LAYER_VAL_DOWN", "title": "Decrease Value RGB of current layer", "shortName": "LVALD"},
+      {"name": "MY_RGB_LAYER_SAVE", "title": "Save current RGB as current layer's RGB", "shortName": "LSAVE"},
+      {"name": "MY_OS_DEFAULT_LAYER", "title": "Set current layer as default layer of current OS", "shortName": "OSDF"}
+
+    ],
     "layouts": {
       "keymap": [
         ["0,0", "0,1", "0,2", "0,3", "0,4", "0,5", {"x":1}, "0,6", "0,7", "0,8", "0,9", "0,10", "0,11"],
