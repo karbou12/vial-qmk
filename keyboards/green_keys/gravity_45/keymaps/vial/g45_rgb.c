@@ -255,7 +255,7 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mod_state = get_mods();
     switch (keycode) {
         case USR_RGB_RETAIN_VAL_TOG:
-            if (rgblight_is_enabled() && record->event.pressed) {
+            if (g45_is_rgblight_per_layer_enabled(record)) {
                 const bool cur_flag = G45_EECONFIG_get_retain_val_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
                 G45_EECONFIG_update_retain_val_to_eeprom(!cur_flag);
