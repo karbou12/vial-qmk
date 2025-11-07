@@ -10,7 +10,7 @@
 my_user_config_t my_user_config = {0};
 
 #ifdef CONSOLE_ENABLE
-void parse_version(const uint32_t version, uint16_t* parsed_version) {
+static void parse_version(const uint32_t version, uint16_t* parsed_version) {
     *parsed_version = version & 0xF;
     parsed_version++;
     *parsed_version = (version >> MY_FW_VER_MINOR_OFFSET) & 0xF;
@@ -26,7 +26,7 @@ void my_dump_eeconfig(const char* const func) {
     uprintf("%s DUMP EEPROM USER DATA. ver:%04x (%u.%u.%u), size:%u, defined size:%u\n",
             func, EECONFIG_USER_DATA_VERSION, version[2], version[1], version[0],
             sizeof(my_user_config), EECONFIG_USER_DATA_SIZE);
-    for (int i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
         uprintf("id:%u, hue:%u, sat:%u, val:%u, mode:%u\n", i, p->hsv.h, p->hsv.s, p->hsv.v, p->mode);
     }
     uprintf("is_rgb_per_layer:%s\n", my_user_config.flags.is_rgb_per_layer ? "true" : "false");
@@ -34,13 +34,13 @@ void my_dump_eeconfig(const char* const func) {
     uprintf("to_retain_val:%s\n", my_user_config.flags.to_retain_val ? "true" : "false");
 
     my_user_config_field_e* p_os = my_user_config.os_default_layer;
-    for (int i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p_os++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(my_user_config.os_default_layer); i++, p_os++) {
         uprintf("id:%u, default layer:%u\n", i, *p_os);
     }
 }
 #endif
 
-uint32_t my_get_offset(const my_user_config_field_e field) {
+static uint32_t my_get_offset(const my_user_config_field_e field) {
     switch (field) {
         case MY_FIELD_LAYER0 ... MY_FIELD_LAYER8:
             return sizeof(my_hsvm_t) * field;
@@ -58,14 +58,6 @@ uint32_t my_get_offset(const my_user_config_field_e field) {
 my_user_config_field_e MY_EECONFIG_get_current_layer_field(const layer_state_t state) {
     const uint8_t layer = get_highest_layer(state);
     return (layer == MY_FIELD_LAYER0) ? get_highest_layer(default_layer_state) : layer;
-}
-
-void MY_EECONFIG_read_all_data_from_user_datablock(void) {
-    eeconfig_read_user_datablock(&my_user_config, 0, sizeof(my_user_config));
-}
-
-void MY_EECONFIG_update_all_data_to_user_datablock(void) {
-    eeconfig_update_user_datablock(&my_user_config, 0, sizeof(my_user_config));
 }
 
 const my_hsvm_t* MY_EECONFIG_get_hsvm_layer_from_mem(const my_user_config_field_e field) {
@@ -132,11 +124,11 @@ void MY_EECONFIG_update_os_default_layer_to_eeprom(const my_user_config_field_e 
 }
 
 void MY_EECONFIG_eeconfig_init_user_datablock(void) {
-    MY_EECONFIG_update_all_data_to_user_datablock();
+    eeconfig_update_user_datablock(&my_user_config, 0, sizeof(my_user_config));
 }
 
 void MY_EECONFIG_keyboard_post_init_user(void) {
-    MY_EECONFIG_read_all_data_from_user_datablock();
+    eeconfig_read_user_datablock(&my_user_config, 0, sizeof(my_user_config));
 }
 
 bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -146,7 +138,6 @@ bool MY_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 rgblight_blink_layer_repeat(MY_BLINK_RESET, 300, 3);
                 eeconfig_init_user_datablock();
 
-                extern void MY_RGB_keyboard_post_init_user(void);
                 MY_RGB_keyboard_post_init_user();
 
                 set_single_default_layer(MY_FIELD_LAYER0);

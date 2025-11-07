@@ -7,17 +7,17 @@
 #include "my_eeconfig.h"
 #include "my_rgb.h"
 
-const rgblight_segment_t PROGMEM my_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_TURQUOISE});
-const rgblight_segment_t PROGMEM my_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
-const rgblight_segment_t PROGMEM my_layer2_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_MAGENTA});
-const rgblight_segment_t PROGMEM my_layer3_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GREEN});
-const rgblight_segment_t PROGMEM my_layer4_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_YELLOW});
-const rgblight_segment_t PROGMEM my_layer5_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_PURPLE});
-const rgblight_segment_t PROGMEM my_layer6_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_AZURE});
-const rgblight_segment_t PROGMEM my_layer7_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_SPRINGGREEN});
-const rgblight_segment_t PROGMEM my_layer8_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_ORANGE});
-const rgblight_segment_t PROGMEM my_capsword_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_RED});
-const rgblight_segment_t PROGMEM my_layerOFF_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_OFF});
+static const rgblight_segment_t PROGMEM my_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_TURQUOISE});
+static const rgblight_segment_t PROGMEM my_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
+static const rgblight_segment_t PROGMEM my_layer2_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_MAGENTA});
+static const rgblight_segment_t PROGMEM my_layer3_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GREEN});
+static const rgblight_segment_t PROGMEM my_layer4_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_YELLOW});
+static const rgblight_segment_t PROGMEM my_layer5_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_PURPLE});
+static const rgblight_segment_t PROGMEM my_layer6_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_AZURE});
+static const rgblight_segment_t PROGMEM my_layer7_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_SPRINGGREEN});
+static const rgblight_segment_t PROGMEM my_layer8_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_ORANGE});
+static const rgblight_segment_t PROGMEM my_capsword_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_RED});
+static const rgblight_segment_t PROGMEM my_layerOFF_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_OFF});
 
 static const rgblight_segment_t PROGMEM my_reset_layer[] =       RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_WHITE});
 static const rgblight_segment_t PROGMEM my_turn_on_layer[] =     RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_GOLD});
@@ -45,14 +45,14 @@ const rgblight_segment_t * const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
 );
 
 static bool my_is_keyboard_post_init_user_called = false;
-static bool my_is_key_pressed_to_skip_rec_rgn = false;
+static bool my_is_key_pressed_to_skip_rec_rgb = false;
 
 static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
     if (!my_is_keyboard_post_init_user_called) {
         return;
     }
 
-    my_is_key_pressed_to_skip_rec_rgn = false;
+    my_is_key_pressed_to_skip_rec_rgb = false;
 
     if (is_caps_word_on()) {
         return;
@@ -79,6 +79,10 @@ static void my_set_rgblight_on_layer_of(const my_user_config_field_e field) {
 }
 
 static void my_record_rgblight_on_layer_of(const my_user_config_field_e field) {
+    if (!my_is_keyboard_post_init_user_called) {
+        return;
+    }
+
     if (is_caps_word_on()) {
         return;
     }
@@ -139,7 +143,7 @@ static bool my_is_rgblight_per_layer_enabled(keyrecord_t *record) {
 
 void MY_RGB_eeconfig_init_mem(void) {
     my_hsvm_t* p = my_user_config.hsvm_layer;
-    for (int i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++) {
         const rgblight_segment_t* const cur_seg = my_rgb_layers[i];
         p->hsv.h = cur_seg->hue;
         p->hsv.s = cur_seg->sat;
@@ -164,7 +168,7 @@ void MY_RGB_eeconfig_migrate_mem(const my_user_config_u* bk, const uint32_t prev
     const my_hsvm_t* bk_p = (prev_ver < MY_BASE_FW_VER_OF_USER_CONFIG_V2) ? bk->v1.hsvm_layer
                                                                           : bk->v2.hsvm_layer;
 
-    for (int i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++, bk_p++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(my_user_config.hsvm_layer); i++, p++, bk_p++) {
         p->hsv.h = bk_p->hsv.h;
         p->hsv.s = bk_p->hsv.s;
         p->hsv.v = bk_p->hsv.v;
@@ -207,7 +211,7 @@ layer_state_t MY_RGB_default_layer_state_set_user(layer_state_t state) {
     // store rgblight automatically if it is changed on vial.
     if (get_highest_layer(state) == 0 && get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
         my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() && !my_is_key_pressed_to_skip_rec_rgn) {
+    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() && !my_is_key_pressed_to_skip_rec_rgb) {
         my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
     }
 
@@ -238,7 +242,7 @@ layer_state_t MY_RGB_layer_state_set_user(layer_state_t state) {
     // store rgblight automatically if it is changed on vial.
     if (get_highest_layer(layer_state) == 0 && get_highest_layer(default_layer_state) == 0) {
         my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() &&!my_is_key_pressed_to_skip_rec_rgn) {
+    } else if (MY_EECONFIG_get_auto_save_rgb_from_mem() &&!my_is_key_pressed_to_skip_rec_rgb) {
         my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
     }
 
@@ -251,12 +255,12 @@ bool MY_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mod_state = get_mods();
     switch (keycode) {
         case USR_RGB_RETAIN_VAL_TOG:
-            if (rgblight_is_enabled() && record->event.pressed) {
+            if (my_is_rgblight_per_layer_enabled(record)) {
                 const bool cur_flag = MY_EECONFIG_get_retain_val_from_mem();
                 rgblight_blink_layer_repeat(cur_flag ? MY_BLINK_OFF : MY_BLINK_ON, 300, 2);
                 MY_EECONFIG_update_retain_val_to_eeprom(!cur_flag);
                 if (MY_EECONFIG_get_current_layer_field(layer_state) != MY_FIELD_LAYER0) {
-                    my_is_key_pressed_to_skip_rec_rgn = true;
+                    my_is_key_pressed_to_skip_rec_rgb = true;
                 }
             }
             return false;
@@ -323,7 +327,7 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case UG_NEXT ... RGB_M_TW:
             if (rgblight_is_enabled()) {
                 my_record_rgblight_on_layer_of(MY_FIELD_LAYER0);
-                my_is_key_pressed_to_skip_rec_rgn = true;
+                my_is_key_pressed_to_skip_rec_rgb = true;
             }
             break;
 
@@ -335,7 +339,7 @@ void MY_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case USR_RGB_LAYER_VAL_DOWN:
             if (my_is_rgblight_per_layer_enabled(NULL)) {
                 my_record_rgblight_on_layer_of(MY_EECONFIG_get_current_layer_field(layer_state));
-                my_is_key_pressed_to_skip_rec_rgn = true;
+                my_is_key_pressed_to_skip_rec_rgb = true;
             }
             break;
 

@@ -11,3 +11,10 @@ typedef enum {
 } g45_blink_layer_e;
 
 extern void G45_RGB_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t prev_ver);
+extern void G45_RGB_eeconfig_init_mem(void);
+extern void G45_RGB_keyboard_post_init_user(void);
+extern layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state);
+extern layer_state_t G45_RGB_layer_state_set_user(layer_state_t state);
+extern bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record);
+extern void G45_RGB_post_process_record_user(uint16_t keycode, keyrecord_t *record);
+extern void G45_RGB_caps_word_set_user(bool active);
