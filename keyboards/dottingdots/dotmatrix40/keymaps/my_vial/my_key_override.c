@@ -1,3 +1,5 @@
+// Copyright 2025 Tano Karbou (github: karbou12 / X: @karbou_12)
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined(KEY_OVERRIDE_ENABLE) && defined(USE_LOCAL_KEY_OVERRIDES)
 
 #define ko_make_with_negmods(trigger_mods, trigger_key, replacement_key, negative_mask) \

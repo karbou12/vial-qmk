@@ -1,4 +1,4 @@
-// Copyright 2023 QMK
+// Copyright 2025 Tano Karbou (github: karbou12 / X: @karbou_12)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
