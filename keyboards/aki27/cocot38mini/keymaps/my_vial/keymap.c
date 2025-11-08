@@ -83,9 +83,9 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [2] =   { ENCODER_CCW_CW(KC_BRID, KC_BRIU) },
     [3] =   { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [4] =   { ENCODER_CCW_CW(XXXXXXX, XXXXXXX) },
-    [5] =   { ENCODER_CCW_CW(RM_VALD, RM_VALU) },
-    [6] =   { ENCODER_CCW_CW(RM_HUED, RM_HUEU) },
-    [7] =   { ENCODER_CCW_CW(RM_SATD, RM_SATU) },
+    [5] =   { ENCODER_CCW_CW(RM_HUED, RM_HUEU) },
+    [6] =   { ENCODER_CCW_CW(RM_SATD, RM_SATU) },
+    [7] =   { ENCODER_CCW_CW(RM_VALD, RM_VALU) },
 };
 #endif
 
