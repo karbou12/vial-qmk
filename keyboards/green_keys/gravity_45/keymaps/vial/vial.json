@@ -1,0 +1,33 @@
+{
+    "name": "Gravity-45",
+    "manufacturer": "GreenKeys",
+    "url": "https://green-keys.info",
+    "matrix": {
+      "rows": 4,
+      "cols": 12
+    },
+    "customKeycodes": [
+      {"name": "USR_RESET", "title": "Reset settings for RGB per layer and default layer per OS", "shortName": "User\nReset"},
+      {"name": "USR_RGB_LAYER_TOG", "title": "Toggle RGB per layer", "shortName": "Layer\nRGB\nToggle"},
+      {"name": "USR_RGB_LAYER_RETAIN_VAL", "title": "Toggle to retain RGB value (brightness) of layer 0", "shortName": "Retain\nBright\nToggle"},
+      {"name": "USR_RGB_LAYER_HUE_UP", "title": "Increase hue of the current layer, decrease it when Shift is held", "shortName": "Layer\nHue +"},
+      {"name": "USR_RGB_LAYER_HUE_DOWN", "title": "Decrease hue of the current layer, increase it when Shift is held", "shortName": "Layer\nHue -"},
+      {"name": "USR_RGB_LAYER_SAT_UP", "title": "Increase saturation of the current layer, decrease it when Shift is held", "shortName": "Layer\nSat +"},
+      {"name": "USR_RGB_LAYER_SAT_DOWN", "title": "Decrease saturation of the current layer, increase it when Shift is held", "shortName": "Layer\nSat -"},
+      {"name": "USR_RGB_LAYER_VAL_UP", "title": "Increase value (brightness) of the current layer, decrease it when Shift is held", "shortName": "Layer\nBright +"},
+      {"name": "USR_RGB_LAYER_VAL_DOWN", "title": "Decrease value (brightness) of the current layer, increase it when Shift is held", "shortName": "Layer\nBright -"},
+      {"name": "USR_RGB_AUTO_SAVE_TOG", "title": "Toggle to save automatically the current RGB as the current layer's RGB except layer 0", "shortName": "Auto\nSave\nRGB"},
+      {"name": "USR_OS_DEFAULT_LAYER", "title": "Set the current layer as the default layer of the current OS", "shortName": "Set\nOSDF"}
+    ],
+    "layouts": {
+      "keymap": [
+        ["0,0", "0,1", "0,2", "0,3", "0,4", "0,5", {"x":3.5}, "0,6", "0,7", "0,8", "0,9", "0,10", "0,11"],
+        [{"x":0.25},"1,0", "1,1", "1,2", "1,3", "1,4", "1,5", {"x":3.5}, "1,6", "1,7", "1,8", "1,9", "1,10", "1,11"],
+        [{"x":7.625, "y":-0.5}, "3,11"],
+        [{"x":0.5, "y":-0.5},"2,0", "2,1", "2,2", "2,3", "2,4", "2,5", {"x":3.5}, "2,6", "2,7", "2,8", "2,9", "2,10", "2,11"],
+        [{"x":2.5}, "3,2", {"w":1.25}, "3,3", {"w":1.25}, "3,4",  "3,5", {"x":2.5}, "3,6", {"w":1.25}, "3,7", {"w":1.25}, "3,8", "3,9"]
+      ]
+    },
+    "lighting": "qmk_rgblight"
+}
+
