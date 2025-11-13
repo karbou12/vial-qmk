@@ -61,6 +61,9 @@ static void reload_combo(void);
 
 #ifdef VIAL_KEY_OVERRIDE_ENABLE
 static void reload_key_override(void);
+#ifdef USE_LOCAL_KEY_OVERRIDES
+static bool is_init_or_default_key_override(const vial_key_override_entry_t *entry);
+#endif
 #endif
 
 #ifdef VIAL_ALT_REPEAT_KEY_ENABLE
@@ -296,14 +299,16 @@ void vial_handle_cmd(uint8_t *msg, uint8_t length) {
 
 #ifdef USE_LOCAL_KEY_OVERRIDES
                 if (idx < key_overrides_raw_size) {
-                    entry.trigger = key_overrides[idx]->trigger;
-                    entry.trigger_mods = key_overrides[idx]->trigger_mods;
-                    entry.layers = key_overrides[idx]->layers;
-                    entry.negative_mod_mask = key_overrides[idx]->negative_mod_mask;
-                    entry.suppressed_mods = key_overrides[idx]->suppressed_mods;
-                    entry.replacement = key_overrides[idx]->replacement;
-                    entry.options = key_overrides[idx]->options;
-                    entry.options |= vial_ko_enabled;
+                    if (is_init_or_default_key_override(&entry)) {
+                        entry.trigger = key_overrides[idx]->trigger;
+                        entry.trigger_mods = key_overrides[idx]->trigger_mods;
+                        entry.layers = key_overrides[idx]->layers;
+                        entry.negative_mod_mask = key_overrides[idx]->negative_mod_mask;
+                        entry.suppressed_mods = key_overrides[idx]->suppressed_mods;
+                        entry.replacement = key_overrides[idx]->replacement;
+                        entry.options = key_overrides[idx]->options;
+                        entry.options |= vial_ko_enabled;
+                    }
                 }
 #endif
 
@@ -628,6 +633,20 @@ bool process_record_vial(uint16_t keycode, keyrecord_t *record) {
 static bool vial_key_override_disabled = 0;
 static key_override_t vial_key_overrides[VIAL_KEY_OVERRIDE_ENTRIES] = { 0 };
 
+#ifdef USE_LOCAL_KEY_OVERRIDES
+static bool is_init_or_default_key_override(const vial_key_override_entry_t *entry) {
+    vial_key_override_entry_t init_entry = { 0 };
+    if (memcmp(&init_entry, entry, sizeof(vial_key_override_entry_t)) == 0) {
+        return true;
+    }
+
+    init_entry.layers = ~0;
+    init_entry.options = ko_options_default;
+
+    return (memcmp(&init_entry, entry, sizeof(vial_key_override_entry_t)) == 0) ? true : false;
+}
+#endif
+
 static int vial_get_key_override(uint8_t index, key_override_t *out) {
     vial_key_override_entry_t entry;
     int ret;
@@ -636,14 +655,16 @@ static int vial_get_key_override(uint8_t index, key_override_t *out) {
 
 #ifdef USE_LOCAL_KEY_OVERRIDES
     if (index < key_overrides_raw_size) {
-        entry.trigger = key_overrides[index]->trigger;
-        entry.trigger_mods = key_overrides[index]->trigger_mods;
-        entry.layers = key_overrides[index]->layers;
-        entry.negative_mod_mask = key_overrides[index]->negative_mod_mask;
-        entry.suppressed_mods = key_overrides[index]->suppressed_mods;
-        entry.replacement = key_overrides[index]->replacement;
-        entry.options = key_overrides[index]->options;
-        entry.options |= vial_ko_enabled;
+        if (is_init_or_default_key_override(&entry)) {
+            entry.trigger = key_overrides[index]->trigger;
+            entry.trigger_mods = key_overrides[index]->trigger_mods;
+            entry.layers = key_overrides[index]->layers;
+            entry.negative_mod_mask = key_overrides[index]->negative_mod_mask;
+            entry.suppressed_mods = key_overrides[index]->suppressed_mods;
+            entry.replacement = key_overrides[index]->replacement;
+            entry.options = key_overrides[index]->options;
+            entry.options |= vial_ko_enabled;
+        }
     }
 #endif
 
