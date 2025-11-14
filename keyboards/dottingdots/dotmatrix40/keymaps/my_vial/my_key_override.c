@@ -75,6 +75,8 @@ void MY_KO_keyboard_post_init_user(void) {
         // set to eeprom
         dynamic_keymap_set_key_override(i, &entry);
     }
+
+    vial_init();
 }
 #endif
 
