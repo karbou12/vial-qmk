@@ -3,3 +3,10 @@
 #include "my_tap_hold.c"
 #include "my_key_override.c"
 #include "my_rgb.c"
+
+void keyboard_post_init_user() {
+#ifndef USE_LOCAL_KEY_OVERRIDES
+    MY_KO_keyboard_post_init_user();
+#endif
+    MY_RGB_keyboard_post_init_user();
+}
