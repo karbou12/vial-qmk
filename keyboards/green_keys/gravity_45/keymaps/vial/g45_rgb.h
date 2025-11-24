@@ -10,6 +10,9 @@ typedef enum {
     G45_BLINK_DF
 } g45_blink_layer_e;
 
+extern const rgblight_segment_t * const g45_blink_layers[];
+extern const rgblight_segment_t * const g45_rgb_layers[];
+
 extern void G45_RGB_eeconfig_migrate_mem(const g45_user_config_u* bk, const uint32_t prev_ver);
 extern void G45_RGB_eeconfig_init_mem(void);
 extern void G45_RGB_keyboard_post_init_user(void);
