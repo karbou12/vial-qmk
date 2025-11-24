@@ -307,7 +307,16 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 const bool cur_flag = G45_EECONFIG_get_rgb_per_layer_from_mem();
                 rgblight_layers = g45_blink_layers;
                 rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
-                G45_EECONFIG_update_rgb_per_layer_to_eeprom(!cur_flag);
+                const bool next_flag = !cur_flag;
+                G45_EECONFIG_update_rgb_per_layer_to_eeprom(next_flag);
+                if (next_flag) {
+                    g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+                } else {
+                    g45_set_rgblight_on_layer_of(G45_FIELD_LAYER0);
+                }
+                if (G45_EECONFIG_get_current_layer_field(layer_state) != G45_FIELD_LAYER0) {
+                    g45_is_key_pressed_to_skip_rec_rgb = true;
+                }
             }
             return false;
 
