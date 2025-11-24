@@ -297,9 +297,7 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case USR_RESET:
             if (record->event.pressed) {
                 if (g45_is_rgblight_per_layer_enabled(record)) {
-                    if (get_highest_layer(layer_state) != G45_FIELD_LAYER0) {
-                        G45_STATUS_set_user_reset_key_pressed_on_non_default_layer(true);
-                    }
+                    G45_STATUS_set_user_reset_key_pressed_on_non_default_layer(true);
                 }
                 set_single_default_layer(G45_FIELD_LAYER0);
                 g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
