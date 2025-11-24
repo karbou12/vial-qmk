@@ -296,6 +296,7 @@ bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 rgblight_layers = g45_blink_layers;
                 rgblight_blink_layer_repeat(cur_flag ? G45_BLINK_OFF : G45_BLINK_ON, 300, 2);
                 G45_EECONFIG_update_retain_val_to_eeprom(!cur_flag);
+                g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
                 if (G45_EECONFIG_get_current_layer_field(layer_state) != G45_FIELD_LAYER0) {
                     g45_is_key_pressed_to_skip_rec_rgb = true;
                 }
