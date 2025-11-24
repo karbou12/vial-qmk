@@ -6,6 +6,7 @@
 #include "g45_keycodes.h"
 #include "g45_eeconfig.h"
 #include "g45_rgb.h"
+#include "g45_status.h"
 
 static const rgblight_segment_t PROGMEM g45_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_TURQUOISE});
 static const rgblight_segment_t PROGMEM g45_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 1, HSV_CYAN});
@@ -80,6 +81,10 @@ static void g45_set_rgblight_on_layer_of(const g45_user_config_field_e field) {
 
 static void g45_record_rgblight_on_layer_of(const g45_user_config_field_e field) {
     if (!g45_is_keyboard_post_init_user_called) {
+        return;
+    }
+
+    if (!G45_STATUS_can_record_rgblight()) {
         return;
     }
 
@@ -215,7 +220,9 @@ layer_state_t G45_RGB_default_layer_state_set_user(layer_state_t state) {
         g45_record_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
     }
 
-    g45_set_rgblight_on_layer_of(get_highest_layer(state));
+    if (G45_STATUS_can_set_rgblight()) {
+        g45_set_rgblight_on_layer_of(get_highest_layer(state));
+    }
 
     return state;
 }
@@ -254,6 +261,20 @@ layer_state_t G45_RGB_layer_state_set_user(layer_state_t state) {
 bool G45_RGB_process_record_user(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mod_state = get_mods();
     switch (keycode) {
+        case USR_RESET:
+            if (record->event.pressed) {
+                if (g45_is_rgblight_per_layer_enabled(record)) {
+                    if (get_highest_layer(layer_state) != G45_FIELD_LAYER0) {
+                        G45_STATUS_set_user_reset_key_pressed_on_non_default_layer(true);
+                    }
+                }
+                set_single_default_layer(G45_FIELD_LAYER0);
+                g45_set_rgblight_on_layer_of(G45_EECONFIG_get_current_layer_field(layer_state));
+            } else {
+                G45_STATUS_set_user_reset_key_pressed_on_non_default_layer(false);
+            }
+            return true;
+
         case USR_RGB_RETAIN_VAL_TOG:
             if (g45_is_rgblight_per_layer_enabled(record)) {
                 const bool cur_flag = G45_EECONFIG_get_retain_val_from_mem();
