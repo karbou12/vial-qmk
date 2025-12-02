@@ -135,14 +135,11 @@ bool G45_EECONFIG_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case USR_RESET:
             if (record->event.pressed) {
+                rgblight_layers = g45_blink_layers;
                 rgblight_blink_layer_repeat(G45_BLINK_RESET, 300, 3);
                 eeconfig_init_user_datablock();
-
-                G45_RGB_keyboard_post_init_user();
-
-                set_single_default_layer(G45_FIELD_LAYER0);
             }
-            return false;
+            return true;
         default:
             return true;
     }

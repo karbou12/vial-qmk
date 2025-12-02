@@ -1,3 +1,5 @@
+// Copyright 2025 Tano Karbou (github: karbou12 / X: @karbou_12)
+// SPDX-License-Identifier: GPL-2.0-or-later
 #ifdef RGBLIGHT_LAYERS
 
 static hsv_t my_hsv;
@@ -51,7 +53,7 @@ static void set_rgblight_on_default_layer(void) {
     rgblight_mode_noeeprom(my_mode);
 }
 
-void keyboard_post_init_user() {
+void MY_RGB_keyboard_post_init_user(void) {
 #ifdef USE_LAYER_SEGMENT
     rgblight_layers = my_rgb_layers;
 #endif
