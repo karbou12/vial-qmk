@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "g45_eeconfig.c"
+#include "g45_status.c"
 #include "g45_rgb.c"
 #include "g45_os.c"
 #include <quantum/nvm/eeprom/nvm_eeprom_eeconfig_internal.h> // for EECONFIG_USER

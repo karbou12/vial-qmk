@@ -48,6 +48,7 @@ bool G45_OS_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case USR_OS_DEFAULT_LAYER:
             if (record->event.pressed) {
+                rgblight_layers = g45_blink_layers;
                 rgblight_blink_layer_repeat(G45_BLINK_DF, 200, 3);
 
                 const g45_user_config_field_e cur_layer = G45_EECONFIG_get_current_layer_field(layer_state);
