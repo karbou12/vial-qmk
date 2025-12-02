@@ -87,6 +87,10 @@ static bool enabled = true;
 // Forward decls
 static const key_override_t *clear_active_override(const bool allow_reregister);
 
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+extern uint16_t g_us_vial_keycode16;
+#endif
+
 void key_override_on(void) {
     enabled = true;
     key_override_printf("Key override ON\n");
@@ -177,7 +181,11 @@ const key_override_t *clear_active_override(const bool allow_reregister) {
     const uint8_t mod_free_replacement = clear_mods_from(active_override->replacement);
 
     bool unregister_replacement = mod_free_replacement != KC_NO &&   // KC_NO is never registered
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+                                  mod_free_replacement <= QK_USER_MAX; // Custom keycodes are never registered
+#else
                                   mod_free_replacement < SAFE_RANGE; // Custom keycodes are never registered
+#endif
 
     // Try firing the custom handler
     if (active_override->custom_action != NULL) {
@@ -201,7 +209,11 @@ const key_override_t *clear_active_override(const bool allow_reregister) {
                                     (active_override->options & ko_option_no_reregister_trigger) == 0 && // Check if override allows
                                     active_override_trigger_is_down &&                                   // Check if trigger is even down
                                     trigger != KC_NO &&                                                  // KC_NO is never registered
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+                                    trigger < QK_USER_MAX;                                                // A custom keycode should not be registered
+#else
                                     trigger < SAFE_RANGE;                                                // A custom keycode should not be registered
+#endif
 
     // Optionally re-register the trigger if it is still down
     if (reregister_trigger) {
@@ -348,7 +360,11 @@ static bool try_activating_override(const uint16_t keycode, const uint8_t layer,
         const uint16_t mod_free_replacement = clear_mods_from(override->replacement);
 
         bool register_replacement = mod_free_replacement != KC_NO &&   // KC_NO is never registered
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+                                    mod_free_replacement <= QK_USER_MAX; // Custom keycodes are never registered
+#else
                                     mod_free_replacement < SAFE_RANGE; // Custom keycodes are never registered
+#endif
 
         // Try firing the custom handler
         if (override->custom_action != NULL) {
@@ -367,6 +383,10 @@ static bool try_activating_override(const uint16_t keycode, const uint8_t layer,
             } else {
                 if (IS_BASIC_KEYCODE(mod_free_replacement)) {
                     add_key(mod_free_replacement);
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+                } else if (IS_QK_LIGHTING(mod_free_replacement) || IS_QK_KB(mod_free_replacement) || IS_QK_USER(mod_free_replacement)) {
+                    g_us_vial_keycode16 = mod_free_replacement;
+#endif
                 } else {
                     key_override_printf("NOT KEY 2\n");
                     send_keyboard_report();
@@ -408,6 +428,10 @@ void key_override_task(void) {
 bool process_key_override(const uint16_t keycode, const keyrecord_t *const record) {
 #ifdef BENCH_KEY_OVERRIDE
     uint16_t start = timer_read();
+#endif
+
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+    g_us_vial_keycode16 = KC_NO;
 #endif
 
     const bool key_down = record->event.pressed;
@@ -515,6 +539,9 @@ bool process_key_override(const uint16_t keycode, const keyrecord_t *const recor
 
             if (should_deactivate) {
                 clear_active_override(false);
+#ifdef USE_UINT16_KEYCODE_FOR_VIAL
+                g_us_vial_keycode16 = KC_NO;
+#endif
             }
         }
     }
